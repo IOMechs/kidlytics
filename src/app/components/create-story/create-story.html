@@ -1,0 +1,61 @@
+<div class="flex items-center justify-center bg-white">
+  <div
+    class="max-w-md mx-auto rounded-xl shadow-md overflow-hidden bg-[var(--bg-light)] text-[var(--secondary-color)] font-[var(--font-main)] sm:w-3/4 w-5/6"
+  >
+    <div class="p-6 flex flex-col gap-4">
+      <h2 class="text-xl font-semibold mb-2 text-[var(--primary-color)]">
+        {{currentQuestion().question}}
+      </h2>
+
+      @if (currentQuestion().isMcq) { @for (opt of currentQuestion().options;
+      track opt) {
+      <label
+        class="flex items-center gap-2 space-x-2 p-2 rounded-md border border-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 transition cursor-pointer"
+      >
+        <input
+          type="radio"
+          name="answer"
+          [value]="opt"
+          class="appearance-none w-4 h-4 rounded-full border-2 border-[var(--primary-color)] checked:bg-[var(--primary-color)] checked:border-[var(--primary-color)] focus:outline-none transition"
+          [(ngModel)]="selectedAnswer"
+        />
+        {{ opt }}
+      </label>
+      } } @else {
+      <input
+        type="text"
+        class="w-full px-4 py-2 rounded-md border border-[var(--primary-color)] bg-white text-[var(--secondary-color)] font-[var(--font-main)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] transition"
+        [(ngModel)]="selectedAnswer"
+        placeholder="Type your answer here..."
+      />
+      }
+
+      <div class="flex justify-between">
+        @if(index() > 0) {
+        <button
+          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)]/80 text-white hover:bg-blue-800 transition"
+          (click)="goToPrev()"
+        >
+          Previous
+        </button>
+        } @if(index()===lengthOfQuestions-1){
+        <button
+          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          (click)="submitAnswers()"
+        >
+          Submit
+        </button>
+
+        }@else{
+        <button
+          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          (click)="goToNext()"
+        >
+          Next
+        </button>
+
+        }
+      </div>
+    </div>
+  </div>
+</div>

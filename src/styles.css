@@ -1,1 +1,25 @@
 /* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+
+@theme {
+    --primary : var(--primary-color)
+}
+
+:root {
+  --primary-color: #2b6cb0;
+  --secondary-color: #718096;
+  --bg-light: #f7fafc;
+  --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
