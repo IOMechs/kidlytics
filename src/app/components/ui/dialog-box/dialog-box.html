@@ -1,0 +1,14 @@
+<h2 mat-dialog-title class="font-extrabold">{{data.status}}</h2>
+<mat-dialog-content>{{data.message}}</mat-dialog-content>
+
+@if(data.url){
+<mat-dialog-content>
+  <a href="{{data.url}}" class="underline text-blue-500"
+    >{{data.url}}</a
+  ></mat-dialog-content
+>
+
+}
+<mat-dialog-actions>
+  <button matButton mat-dialog-close>Close</button>
+</mat-dialog-actions>

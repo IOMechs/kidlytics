@@ -6,7 +6,6 @@
       <h2 class="text-xl font-semibold mb-2 text-[var(--primary-color)]">
         {{currentQuestion().question}}
       </h2>
-
       @if (currentQuestion().isMcq) { @for (opt of currentQuestion().options;
       track opt) {
       <label
@@ -30,25 +29,26 @@
       />
       }
 
-      <div class="flex justify-between">
+      <div class="flex md:flex-row flex-col items-center justify-between">
         @if(index() > 0) {
         <button
-          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)]/80 text-white hover:bg-blue-800 transition"
+          class="mt-4 w-36 px-4 py-2 rounded bg-[var(--primary-color)]/80 text-white hover:bg-blue-800 transition"
           (click)="goToPrev()"
         >
           Previous
         </button>
         } @if(index()===lengthOfQuestions-1){
         <button
-          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          class="mt-4 w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
           (click)="submitAnswers()"
+          [disabled]="loading()"
         >
-          Submit
+          {{loading() ? "Generating..." : "Generate"}}
         </button>
 
         }@else{
         <button
-          class="mt-4 w-22 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          class="mt-4 w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
           (click)="goToNext()"
         >
           Next
