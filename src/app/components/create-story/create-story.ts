@@ -10,7 +10,7 @@ import {
   WritableSignal,
   output,
 } from '@angular/core';
-import { STORY_QUESTIONS } from '../../../contants/questions';
+import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
 
