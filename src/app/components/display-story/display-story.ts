@@ -29,7 +29,7 @@ export class DisplayStory implements OnInit {
           const data = storyRef.data();
           this.storyParts.set(data['storyParts']);
           this.storyTitle.set(data['name']);
-          console.log(this.storyParts.length);
+          console.log(this.storyParts.length, 'length');
         }
       } else {
         console.warn('No story found for id:', id);

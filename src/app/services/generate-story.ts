@@ -5,6 +5,7 @@ import {
   StoryGenerationStatus,
   StoryPart,
   StoryPartWithImg,
+  Story,
 } from '../model/story.type';
 import { concatMap, from, map, Observable, of, switchMap, toArray } from 'rxjs';
 import { addDoc, collection } from 'firebase/firestore';
@@ -23,7 +24,7 @@ export class GenerateStory {
     for (const [key, value] of Object.entries(userContext)) {
       usersPreference += `${key} : ${value} \n`;
     }
-    return this.http.post<Array<StoryPart>>(this.url + '/api/generateStory', {
+    return this.http.post<Story>(this.url + '/api/generateStory', {
       userContext: usersPreference,
     });
   }
@@ -47,10 +48,13 @@ export class GenerateStory {
   getStoryAndImage(
     userContext: Record<string, string>
   ): Observable<StoryGenerationStatus> {
-    const storyName = userContext['storyName'] || `Untitled Story`;
+    let storyName = `Untitled Story`;
 
     return this.getStoryFromGemini(userContext).pipe(
-      switchMap((storyArray) => from(storyArray)),
+      switchMap((story) => {
+        storyName = story.title;
+        return from(story.parts);
+      }),
       concatMap((part) =>
         this.generateImage(part.content).pipe(
           map((imageUri) => ({

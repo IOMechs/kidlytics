@@ -17,3 +17,8 @@ export type StoryGenerationStatus = {
 export type ModalContentT = StoryGenerationStatus & {
   showModal: boolean;
 };
+
+export type Story = {
+  parts: StoryPart[];
+  title: string;
+};
