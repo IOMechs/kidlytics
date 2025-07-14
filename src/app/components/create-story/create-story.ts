@@ -2,22 +2,15 @@ import {
   Component,
   computed,
   inject,
-  Output,
   signal,
-  EventEmitter,
   input,
-  model,
-  WritableSignal,
   output,
 } from '@angular/core';
 import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
 
-import {
-  StoryGenerationStatus,
-  StoryPartWithImg,
-} from '../../model/story.type';
+import { StoryGenerationStatus } from '../../model/story.type';
 
 @Component({
   selector: 'app-create-story',
@@ -26,22 +19,22 @@ import {
   styleUrl: './create-story.css',
 })
 export class CreateStory {
+  //signals
   index = signal(0);
-
-  loading = input(false);
-  loadingEvent = output<boolean>();
-
-  statusEvent = output<StoryGenerationStatus>();
-
-  @Output() storyPart = new EventEmitter<any>();
-  @Output() clearStory = new EventEmitter<any>();
-
-  storyService = inject(GenerateStory);
-
-  lengthOfQuestions = STORY_QUESTIONS.length;
-
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
 
+  //injections
+  storyService = inject(GenerateStory);
+
+  //outputs
+  loadingEvent = output<boolean>();
+  statusEvent = output<StoryGenerationStatus>();
+
+  //inputs
+
+  loading = input(false);
+
+  lengthOfQuestions = STORY_QUESTIONS.length;
   isMcq = this.currentQuestion().isMcq;
 
   answers: Record<string, string> = {};
@@ -68,25 +61,14 @@ export class CreateStory {
 
   submitAnswers = async () => {
     this.emitLoadingEvent(true);
-    this.clearStory.emit();
     this.storyService.getStoryAndImage(this.answers).subscribe((p) => {
-      console.log('1');
-      console.log(p);
       this.emitLoadingEvent(false);
+      console.log(p.url);
       this.statusEvent.emit({
         status: p.status,
         message: p.message,
         url: p.url,
       });
     });
-    // setTimeout(() => {
-    //   console.log('');
-    //   this.emitLoadingEvent(false);
-    //   this.statusEvent.emit({
-    //     status: 'Success',
-    //     message: 'Story generated successfully . Please visit the given URL',
-    //     url: 'http://localhost:4200/viewStory?id=story-1',
-    //   });
-    // }, 200);
   };
 }

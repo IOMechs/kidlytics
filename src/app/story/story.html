@@ -3,8 +3,6 @@
 </h1>
 
 <app-create-story
-  (storyPart)="addPart($event)"
-  (clearStory)="clearStory()"
   [loading]="isLoading()"
   (loadingEvent)="toggleLoadingBar($event)"
   (statusEvent)="toggleModal($event)"
