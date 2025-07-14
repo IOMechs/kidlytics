@@ -6,7 +6,10 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
-import { storyGenerationFlow } from './genkit/storyGenerationFlow';
+import {
+  imageGenerationFlow,
+  storyGenerationFlow,
+} from './genkit/storyGenerationFlow';
 import { environment } from './environments/environment';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -60,26 +63,15 @@ app.post('/api/imageGen', async (req, res) => {
   const CLOUDFLARE_API_TOKEN = environment.CLOUDFLARE_WORKER_AI_TOKEN;
   const model = '@cf/black-forest-labs/flux-1-schnell';
   const url = environment.CLOUDFLARE_URL + model || '';
-  console.log(url);
+
   const prompt = `${imagePrompt}`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        height: 256,
-        width: 256,
-      }),
+    const { imageUri } = await imageGenerationFlow({
+      imagePrompt,
     });
-
-    const data = await response.json();
-    if (!data.success) throw new Error('Error while generating image');
-    res.json({ imageBase64: data?.result?.image });
+    if (!imageUri) throw new Error('Error while generating image');
+    res.json({ imageUri });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Image while generating image' }); // or throw error if you want to handle it upstream
