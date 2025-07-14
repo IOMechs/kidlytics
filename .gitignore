@@ -41,8 +41,9 @@ testem.log
 .DS_Store
 Thumbs.db
 
+#env
 src/environments/*
-
+.env*
 
 #Genkit
 /.genkit

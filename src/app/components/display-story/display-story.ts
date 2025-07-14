@@ -1,8 +1,7 @@
-import { Component, OnInit, signal, Signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { StoryPartWithImg } from '../../model/story.type';
-import { stories } from '../../../assets/dummyData';
-import { collection, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase';
 
 @Component({
@@ -10,49 +9,62 @@ import { db } from '../../../../firebase';
   standalone: true,
   templateUrl: './display-story.html',
   styleUrls: ['./display-story.css'],
+  imports: [],
 })
 export class DisplayStory implements OnInit {
+  // Signals for state
   storyParts = signal<StoryPartWithImg[]>([]);
-
   storyTitle = signal<string>('');
+  isLoading = signal<boolean>(true);
+  currentIndex = signal<number>(0);
+  error = signal<string | null>(null);
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
+      if (!id) {
+        this.error.set('No story ID found in URL.');
+        this.isLoading.set(false);
+        return;
+      }
 
-      if (id) {
-        const storyRef = await getDoc(doc(db, 'stories', id));
+      try {
+        this.isLoading.set(true);
 
-        if (storyRef.exists()) {
-          const data = storyRef.data();
+        const storySnap = await getDoc(doc(db, 'stories', id));
+
+        if (!storySnap.exists()) {
+          this.error.set('No story found with this ID.');
+        } else {
+          const data = storySnap.data();
           this.storyParts.set(data['storyParts']);
           this.storyTitle.set(data['name']);
-          console.log(this.storyParts.length, 'length');
         }
-      } else {
-        console.warn('No story found for id:', id);
-        this.storyParts.set([]);
+      } catch (err) {
+        console.error(err);
+        this.error.set('Error loading story. Please try again.');
+      } finally {
+        this.isLoading.set(false);
       }
     });
   }
 
-  currentIndex = 0;
-
-  getStoryParts(): StoryPartWithImg[] {
-    return this.storyParts() ?? [];
-  }
-
-  getStoryTitle(): string {
-    return this.storyTitle() ?? 'Untitled';
-  }
-
+  // Navigation
   prevCard(): void {
-    if (this.currentIndex > 0) this.currentIndex--;
+    if (this.currentIndex() > 0) this.currentIndex.update((p) => p - 1);
   }
 
   nextCard(): void {
-    if (this.currentIndex < this.storyParts().length - 1) this.currentIndex++;
+    if (this.currentIndex() < this.storyParts().length - 1)
+      this.currentIndex.update((p) => p + 1);
+  }
+
+  onSwipe(evt: any) {
+    const x =
+      Math.abs(evt.deltaX) > 40 ? (evt.deltaX > 0 ? 'right' : 'left') : '';
+    const y = Math.abs(evt.deltaY) > 40 ? (evt.deltaY > 0 ? 'down' : 'up') : '';
+    console.log(`${x} ${y}`);
   }
 }

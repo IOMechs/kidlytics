@@ -7,14 +7,16 @@
     {{ storyTitle() }}
   </h1>
 
-  @if (storyParts().length === 0) {
+  @if (storyParts().length === 0 && !isLoading()) {
   <p class="text-gray-500 text-center">No story found</p>
+  } @else if (isLoading()){
+  <p>Loading Story</p>
   } @else {
-  <div class="flex items-center">
+  <div class="flex items-center" (swipe)="onSwipe($event) ">
     <button
       class="px-4 h-12 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
       (click)="prevCard()"
-      [disabled]="currentIndex === 0"
+      [disabled]="currentIndex() === 0"
     >
       ←
     </button>
@@ -23,7 +25,7 @@
     >
       <div class="w-full max-h-64 overflow-hidden rounded-xl">
         <img
-          [src]="storyParts()[currentIndex].imageUri"
+          [src]="storyParts()[currentIndex()].imageUri"
           alt="Story image"
           class="w-full h-full object-cover border-4 border-[var(--primary-color)] shadow-sm"
         />
@@ -32,17 +34,17 @@
       <div
         class="overflow-y-auto max-h-48 px-1 text-base sm:text-lg text-gray-800 font-[Comic_Sans_MS] leading-relaxed text-center"
       >
-        <p>{{ storyParts()[currentIndex].content }}</p>
+        <p>{{ storyParts()[currentIndex()].content }}</p>
       </div>
       <span class="text-sm text-gray-600">
-        {{ currentIndex + 1 }} / {{ storyParts().length }}
+        {{ currentIndex() + 1 }} / {{ storyParts().length }}
       </span>
     </div>
 
     <button
       class="px-4 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
       (click)="nextCard()"
-      [disabled]="currentIndex === storyParts().length - 1"
+      [disabled]="currentIndex() === storyParts().length - 1"
     >
       →
     </button>
