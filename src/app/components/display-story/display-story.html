@@ -12,7 +12,7 @@
   } @else if (isLoading()){
   <p>Loading Story</p>
   } @else {
-  <div class="flex items-center" (swipe)="onSwipe($event) ">
+  <div class="flex items-center" (swipe)="onSwipe($event)">
     <button
       class="px-4 h-12 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
       (click)="prevCard()"
@@ -20,25 +20,38 @@
     >
       ←
     </button>
-    <div
-      class="w-full max-w-md flex flex-col items-center gap-4 p-4 rounded-xl shadow-md bg-[var(--bg-light)] text-[var(--secondary-color)] transition-all duration-300 overflow-hidden"
-    >
-      <div class="w-full max-h-64 overflow-hidden rounded-xl">
-        <img
-          [src]="storyParts()[currentIndex()].imageUri"
-          alt="Story image"
-          class="w-full h-full object-cover border-4 border-[var(--primary-color)] shadow-sm"
-        />
-      </div>
 
+    <div class="story-carousel-container w-full max-w-md">
+      @for (part of storyParts(); track $index) {
       <div
-        class="overflow-y-auto max-h-48 px-1 text-base sm:text-lg text-gray-800 font-[Comic_Sans_MS] leading-relaxed text-center"
+        class="story-card flex flex-col items-center gap-4 p-4 rounded-xl shadow-md bg-[var(--bg-light)] text-[var(--secondary-color)] transition-all duration-300 overflow-hidden"
+        [class.active]="$index === currentIndex()"
       >
-        <p>{{ storyParts()[currentIndex()].content }}</p>
+        <div class="relative w-full aspect-video rounded-xl overflow-hidden">
+          <div
+            class="absolute inset-0 border-4 border-[var(--primary-color)] shadow-sm rounded-xl"
+          >
+            <img
+              [src]="part.imageUri"
+              alt="Story image"
+              class="w-full h-full object-cover transition-opacity duration-300"
+              [class.opacity-0]="!imagesLoaded()[$index]"
+              [class.opacity-100]="imagesLoaded()[$index]"
+            />
+          </div>
+        </div>
+
+        <div
+          class="overflow-y-auto max-h-48 px-1 text-base sm:text-lg text-gray-800 font-[Comic_Sans_MS] leading-relaxed text-center"
+        >
+          <p>{{ part.content }}</p>
+        </div>
+
+        <span class="text-sm text-gray-600">
+          {{ $index + 1 }} / {{ storyParts().length }}
+        </span>
       </div>
-      <span class="text-sm text-gray-600">
-        {{ currentIndex() + 1 }} / {{ storyParts().length }}
-      </span>
+      }
     </div>
 
     <button

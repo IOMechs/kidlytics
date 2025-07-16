@@ -1,9 +1,3 @@
-import {
-  AngularNodeAppEngine,
-  createNodeRequestHandler,
-  isMainModule,
-  writeResponseToNodeResponse,
-} from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
 import {
@@ -11,36 +5,14 @@ import {
   storyGenerationFlow,
 } from './genkit/storyGenerationFlow';
 import { environment } from './environments/environment';
+import cors from 'cors';
 
-const browserDistFolder = join(import.meta.dirname, '../browser');
+const browserDistFolder = join(process.cwd(), 'dist/kidelytics/browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
 
+app.use(cors());
 app.use(express.json());
-
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
-
-/**
- * Serve static files from /browser
- */
-app.use(
-  express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false,
-    redirect: false,
-  })
-);
 
 app.post('/api/test', (req, res) => {
   console.log('BODY:', req.body); // should log your POST data
@@ -78,35 +50,27 @@ app.post('/api/imageGen', async (req, res) => {
   }
 });
 
-// app.post('/api/generateStory', expressHandler(storyGenerationFlow));
 /**
- * Handle all other requests by rendering the Angular application.
+ * Serve static files from /browser
  */
-app.use((req, res, next) => {
-  angularApp
-    .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next()
-    )
-    .catch(next);
+app.use(express.static(browserDistFolder, {
+  maxAge: '1y',
+  index: false,
+  redirect: false,
+}));
+
+/**
+ * All other routes should serve the index.html file
+ */
+app.get('*', (req, res) => {
+  res.sendFile(join(browserDistFolder, 'index.html'));
 });
 
 /**
- * Start the server if this module is the main entry point.
+ * Start the server.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-if (isMainModule(import.meta.url)) {
-  const port = process.env['PORT'] || 4000;
-  app.listen(port, (error) => {
-    if (error) {
-      throw error;
-    }
-
-    console.log(`Node Express server listening on http://localhost:${port}`);
-  });
-}
-
-/**
- * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
- */
-export const reqHandler = createNodeRequestHandler(app);
+const port = process.env['PORT'] || 4200;
+app.listen(port, () => {
+  console.log(`Node Express server listening on http://localhost:${port}`);
+});

@@ -1,0 +1,20 @@
+/* Style for the story carousel */
+
+
+.story-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  visibility: hidden;
+
+}
+
+.story-card.active {
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+}
+

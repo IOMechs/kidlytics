@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
 
 import { StoryGenerationStatus } from '../../model/story.type';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-create-story',
@@ -61,14 +62,36 @@ export class CreateStory {
 
   submitAnswers = async () => {
     this.emitLoadingEvent(true);
-    this.storyService.getStoryAndImage(this.answers).subscribe((p) => {
-      this.emitLoadingEvent(false);
-      console.log(p.url);
-      this.statusEvent.emit({
-        status: p.status,
-        message: p.message,
-        url: p.url,
+
+    this.storyService
+      .getStoryAndImage(this.answers)
+      .pipe(
+        catchError((error) => {
+          console.error('Error occurred while generating story/image:', error);
+          this.emitLoadingEvent(false);
+
+          this.statusEvent.emit({
+            status: 'Error',
+            message: 'Failed to generate story or image. Please try again.',
+            url: '',
+          });
+
+          // Return an empty observable to stop further processing
+          return of(null);
+        })
+      )
+      .subscribe((p) => {
+        if (!p) return; // already handled in catchError
+
+        this.emitLoadingEvent(false);
+
+        this.statusEvent.emit({
+          status: p.status,
+          message: p.message,
+          url: p.url,
+        });
+
+        console.log(p.url);
       });
-    });
   };
 }

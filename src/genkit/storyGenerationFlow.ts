@@ -70,18 +70,12 @@ export const storyGenerationFlow = ai.defineFlow(
         },
       });
 
-      return (
-        output || {
-          title: '',
-          parts: [],
-        }
-      );
+      if (!output) throw new Error('Error While Generating Story');
+
+      return output;
     } catch (e) {
       console.log(e);
-      return {
-        title: '',
-        parts: [],
-      };
+      throw new Error('Error while generating story');
     }
   }
 );

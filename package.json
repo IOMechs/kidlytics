@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "serve:api": "tsx --watch src/api/api.ts",
     "serve:ssr:kidelytics": "node dist/kidelytics/server/server.mjs"
   },
   "private": true,

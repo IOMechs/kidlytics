@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { StoryPartWithImg } from '../../model/story.type';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,7 +9,6 @@ import { db } from '../../../../firebase';
   standalone: true,
   templateUrl: './display-story.html',
   styleUrls: ['./display-story.css'],
-  imports: [],
 })
 export class DisplayStory implements OnInit {
   // Signals for state
@@ -18,10 +17,12 @@ export class DisplayStory implements OnInit {
   isLoading = signal<boolean>(true);
   currentIndex = signal<number>(0);
   error = signal<string | null>(null);
+  imagesLoaded = signal<boolean[]>([]);
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    console.log('initing');
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -35,12 +36,19 @@ export class DisplayStory implements OnInit {
 
         const storySnap = await getDoc(doc(db, 'stories', id));
 
+        console.log('data fetched');
         if (!storySnap.exists()) {
           this.error.set('No story found with this ID.');
         } else {
           const data = storySnap.data();
           this.storyParts.set(data['storyParts']);
           this.storyTitle.set(data['name']);
+
+          // Initialize image loaded states
+          this.imagesLoaded.set(Array(data['storyParts'].length).fill(false));
+
+          // Preload all images
+          this.preloadAllImages();
         }
       } catch (err) {
         console.error(err);
@@ -51,20 +59,47 @@ export class DisplayStory implements OnInit {
     });
   }
 
-  // Navigation
+  // Rest of your component methods remain unchanged
+  preloadAllImages(): void {
+    this.storyParts().forEach((part, index) => {
+      const img = new Image();
+      img.onload = () => {
+        const newLoadedStates = [...this.imagesLoaded()];
+        newLoadedStates[index] = true;
+        this.imagesLoaded.set(newLoadedStates);
+      };
+      img.onerror = () => {
+        console.error(`Failed to load image at index ${index}`);
+      };
+      img.src = part.imageUri;
+    });
+  }
+
   prevCard(): void {
-    if (this.currentIndex() > 0) this.currentIndex.update((p) => p - 1);
+    if (this.currentIndex() > 0) {
+      this.currentIndex.update((p) => p - 1);
+    }
   }
 
   nextCard(): void {
-    if (this.currentIndex() < this.storyParts().length - 1)
+    if (this.currentIndex() < this.storyParts().length - 1) {
       this.currentIndex.update((p) => p + 1);
+    }
   }
 
   onSwipe(evt: any) {
     const x =
       Math.abs(evt.deltaX) > 40 ? (evt.deltaX > 0 ? 'right' : 'left') : '';
     const y = Math.abs(evt.deltaY) > 40 ? (evt.deltaY > 0 ? 'down' : 'up') : '';
-    console.log(`${x} ${y}`);
+
+    if (x === 'right') {
+      this.prevCard();
+    } else if (x === 'left') {
+      this.nextCard();
+    }
+  }
+
+  isCurrentImageLoaded(): boolean {
+    return this.imagesLoaded()[this.currentIndex()] || false;
   }
 }
