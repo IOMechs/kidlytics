@@ -95,6 +95,7 @@ export const imageGenerationFlow = ai.defineFlow(
       const response = await ai.generate({
         model: vertexAI.model('imagen-3.0-fast-generate-001'),
         prompt: imagePrompt,
+
         output: { format: 'media' },
         config: {
           safetySetting: 'block_few',

@@ -18,6 +18,7 @@ export class DisplayStory implements OnInit {
   currentIndex = signal<number>(0);
   error = signal<string | null>(null);
   imagesLoaded = signal<boolean[]>([]);
+  preloadedImages = signal<(HTMLImageElement | null)[]>([]);
 
   constructor(private route: ActivatedRoute) {}
 
@@ -61,12 +62,18 @@ export class DisplayStory implements OnInit {
 
   // Rest of your component methods remain unchanged
   preloadAllImages(): void {
+    const newLoadedStates = Array(this.storyParts().length).fill(false);
+    const loadedImages: (HTMLImageElement | null)[] = Array(
+      this.storyParts().length
+    ).fill(null);
+
     this.storyParts().forEach((part, index) => {
       const img = new Image();
       img.onload = () => {
-        const newLoadedStates = [...this.imagesLoaded()];
         newLoadedStates[index] = true;
-        this.imagesLoaded.set(newLoadedStates);
+        loadedImages[index] = img;
+        this.imagesLoaded.set([...newLoadedStates]);
+        this.preloadedImages.set([...loadedImages]);
       };
       img.onerror = () => {
         console.error(`Failed to load image at index ${index}`);

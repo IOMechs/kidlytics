@@ -1,61 +1,68 @@
 <div
-  class="flex flex-col items-center px-4 py-3 w-full min-h-screen overflow-scroll"
+  class="story-container flex flex-col items-center px-4 py-3 w-full min-h-screen"
 >
   <h1
-    class="font-bold text-2xl md:text-3xl text-[var(--secondary-color)] text-center mb-2"
+    class="font-bold text-2xl md:text-3xl text-[var(--secondary-color)] text-center mb-4"
   >
     {{ storyTitle() }}
   </h1>
 
   @if (storyParts().length === 0 && !isLoading()) {
   <p class="text-gray-500 text-center">No story found</p>
-  } @else if (isLoading()){
+  } @else if (isLoading()) {
   <p>Loading Story</p>
   } @else {
-  <div class="flex items-center" (swipe)="onSwipe($event)">
+  <div
+    class="story-navigation flex items-center justify-center w-full max-w-md mx-auto"
+    (swipe)="onSwipe($event)"
+  >
     <button
-      class="px-4 h-12 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
+      class="navigation-button px-4 h-12 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
       (click)="prevCard()"
       [disabled]="currentIndex() === 0"
     >
       ←
     </button>
 
-    <div class="story-carousel-container w-full max-w-md">
-      @for (part of storyParts(); track $index) {
+    <div class="story-card-container flex-1 mx-2">
       <div
-        class="story-card flex flex-col items-center gap-4 p-4 rounded-xl shadow-md bg-[var(--bg-light)] text-[var(--secondary-color)] transition-all duration-300 overflow-hidden"
-        [class.active]="$index === currentIndex()"
+        class="story-card flex flex-col items-center gap-4 p-4 rounded-xl shadow-md bg-[var(--bg-light)] text-[var(--secondary-color)]"
       >
-        <div class="relative w-full aspect-video rounded-xl overflow-hidden">
+        <div class="relative w-full aspect-video overflow-hidden">
           <div
-            class="absolute inset-0 border-4 border-[var(--primary-color)] shadow-sm rounded-xl"
+            class="absolute inset-0 rounded-lg border-4 border-[var(--primary-color)] shadow-sm"
           >
+            @if (isCurrentImageLoaded()) {
             <img
-              [src]="part.imageUri"
+              [src]="preloadedImages()[currentIndex()]?.src || storyParts()[currentIndex()].imageUri"
               alt="Story image"
-              class="w-full h-full object-cover transition-opacity duration-300"
-              [class.opacity-0]="!imagesLoaded()[$index]"
-              [class.opacity-100]="imagesLoaded()[$index]"
+              class="w-full h-full object-cover rounded-sm"
             />
+
+            } @else {
+            <div
+              class="w-full h-full flex items-center justify-center bg-gray-100"
+            >
+              <span class="text-gray-400">Loading image...</span>
+            </div>
+            }
           </div>
         </div>
 
         <div
-          class="overflow-y-auto max-h-48 px-1 text-base sm:text-lg text-gray-800 font-[Comic_Sans_MS] leading-relaxed text-center"
+          class="content-container w-full px-1 text-base sm:text-lg text-gray-800 font-[Comic_Sans_MS] leading-relaxed text-center"
         >
-          <p>{{ part.content }}</p>
+          <p>{{ storyParts()[currentIndex()].content }}</p>
         </div>
 
         <span class="text-sm text-gray-600">
-          {{ $index + 1 }} / {{ storyParts().length }}
+          {{ currentIndex() + 1 }} / {{ storyParts().length }}
         </span>
       </div>
-      }
     </div>
 
     <button
-      class="px-4 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
+      class="navigation-button px-4 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
       (click)="nextCard()"
       [disabled]="currentIndex() === storyParts().length - 1"
     >
