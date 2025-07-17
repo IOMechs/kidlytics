@@ -1,0 +1,55 @@
+
+.story-navigation {
+  width: 100%;
+  gap: 8px;
+}
+
+.story-card-container {
+  max-width: calc(100% - 100px);
+}
+
+.story-card {
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.navigation-button {
+  flex-shrink: 0;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.content-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .story-card {
+    padding: 12px;
+  }
+  
+  
+}
+
+@media (min-width: 768px) {
+  .story-navigation {
+    max-width: 600px;
+  }
+}

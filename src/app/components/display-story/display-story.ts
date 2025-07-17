@@ -3,12 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 import { StoryPartWithImg } from '../../model/story.type';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase';
+import { StoryCard } from '../story-card/story-card';
 
 @Component({
   selector: 'app-display-story',
   standalone: true,
   templateUrl: './display-story.html',
   styleUrls: ['./display-story.css'],
+  imports: [StoryCard],
 })
 export class DisplayStory implements OnInit {
   // Signals for state
@@ -82,31 +84,7 @@ export class DisplayStory implements OnInit {
     });
   }
 
-  prevCard(): void {
-    if (this.currentIndex() > 0) {
-      this.currentIndex.update((p) => p - 1);
-    }
-  }
-
-  nextCard(): void {
-    if (this.currentIndex() < this.storyParts().length - 1) {
-      this.currentIndex.update((p) => p + 1);
-    }
-  }
-
-  onSwipe(evt: any) {
-    const x =
-      Math.abs(evt.deltaX) > 40 ? (evt.deltaX > 0 ? 'right' : 'left') : '';
-    const y = Math.abs(evt.deltaY) > 40 ? (evt.deltaY > 0 ? 'down' : 'up') : '';
-
-    if (x === 'right') {
-      this.prevCard();
-    } else if (x === 'left') {
-      this.nextCard();
-    }
-  }
-
-  isCurrentImageLoaded(): boolean {
-    return this.imagesLoaded()[this.currentIndex()] || false;
+  modifyIndex(newIndex: number): void {
+    this.currentIndex.set(newIndex);
   }
 }
