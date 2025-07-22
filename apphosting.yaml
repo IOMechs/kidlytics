@@ -59,7 +59,7 @@ env:
       - RUNTIME
 
   - variable: apiKey
-    secret: apiKey
+    secret: projects/95440248217/secrets/apiKey
 
 # Build and run commands
 scripts:
