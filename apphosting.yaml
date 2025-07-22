@@ -8,55 +8,60 @@ runConfig:
   # memoryMiB: 512
 
 # Environment variables and secrets.
+# See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
 env:
-  Configure environment variables.
-  See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
   - variable: apiUrl
     value: https://kidlytics--kidlytics.europe-west4.hosted.app
     availability:
       - BUILD
       - RUNTIME
+
   - variable: FRONTEND_BASE_URL
     value: https://kidlytics--kidlytics.europe-west4.hosted.app
     availability:
       - BUILD
       - RUNTIME
+
   - variable: authDomain
     value: kidlytics.firebaseapp.com
     availability:
       - BUILD
       - RUNTIME
+
   - variable: projectId
     value: kidlytics
     availability:
       - BUILD
       - RUNTIME
+
   - variable: storageBucket
     value: kidlytics.firebasestorage.app
     availability:
       - BUILD
       - RUNTIME
+
   - variable: messagingSenderId
     value: 95440248217
     availability:
       - BUILD
       - RUNTIME
+
   - variable: appId
     value: 1:95440248217:web:d1350139d9daacd658c708
     availability:
       - BUILD
       - RUNTIME
+
   - variable: gcpProjectId
     value: kidlytics
     availability:
       - BUILD
       - RUNTIME
+
   - variable: apiKey
     secret: apiKey
 
-
+# Build and run commands
 scripts:
-  buildCommand: "node -e \"require('fs').writeFileSync('src/env-config.js', 'window.env = ' + JSON.stringify(process.env))\" && ng build --configuration production"
+  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production"
   runCommand: "node server.js"
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
