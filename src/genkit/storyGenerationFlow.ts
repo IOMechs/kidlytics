@@ -42,17 +42,31 @@ export const storyGenerationFlow = ai.defineFlow(
     try {
       const { output } = await ai.generate({
         model: vertexAI.model('gemini-2.0-flash'),
-        prompt: `Create an intresting story for the kid with this these detail and interest
-        ${userContext}. The story should be in 4-5 parts, each part in a different object in the array.
-        With each part, give a simple short prompt for generating a very simple picture for representing that part of the story
-        
-        **IMPORTANT NOTE** 
-        Make sure the image prompts comply with the Imagen Model's Content Filter, as we will be feeding this to Imagen 3 to generate images
+        prompt: `You are a helpful AI designed to generate short, creative, and age-appropriate stories for young children based on answers provided by a user. Your goal is to create fun, imaginative stories that are completely safe, free of inappropriate themes, avoiding controversial and politcal topics and respectful of safety standards.
 
-        Below are the guidlines and examples to generate comply with Google's Safet Filters
+          ---
 
-        Consider rephrasing your prompts to avoid trigger words like "child," "infant," or "kid," and instead use alternatives such as "young person," "youth," "student," "boy," "girl," or specify the age (e.g., "a fifteen-year-old girl"). Be sure to emphasize the art style by clearly stating that you're looking for a comic or cartoon style, using phrases like "comic book illustration," "cartoon character," "animated style," or "digital painting" to indicate a non-realistic image. Additionally, include contextual clues that reinforce the non-sexual, educational nature of the scene, such as "a young student in a classroom," "children playing in a park under adult supervision," or "a group of children listening to a storyteller.
-        `,
+          ## ✍️ TASK:
+
+          Using the provided input, generate a story that is:
+
+          - Broken into 4–5 parts (each as a separate object in an array)
+          - Each part should be:
+            - 3–6 sentences long
+            - Simple enough for children (ages 4–10) to understand
+            - Wholesome, imaginative, and positive
+            - Rich in visuals and emotions to inspire picture generation
+          - For each part, also return a **simple, Imagen-safe image prompt** that represents the scene in a **cartoon/digital art** style
+          - Even if the story content is in some other content write the image prompt in English only
+
+          ---
+
+          ## 🔐 INPUT (provided as JSON):
+
+          The user has provided some story preferences and ideas in the form of a structured object:
+
+          ${userContext}
+`,
         output: {
           schema: z.object({
             title: z.string(),
@@ -100,6 +114,10 @@ export const imageGenerationFlow = ai.defineFlow(
         config: {
           safetySetting: 'block_few',
           personGeneration: 'allow_all',
+          outputOptions: {
+            mimeType: 'image/jpeg',
+            compressionQuality: 40,
+          },
         },
       });
 
@@ -109,9 +127,9 @@ export const imageGenerationFlow = ai.defineFlow(
       };
     } catch (e) {
       console.log(e);
-      return {
-        imageUri: '',
-      };
+      throw new Error(
+        e instanceof Error ? e.message : 'Error while generating image for you'
+      );
     }
   }
 );

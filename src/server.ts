@@ -10,11 +10,12 @@ import {
   imageGenerationFlow,
   storyGenerationFlow,
 } from './genkit/storyGenerationFlow';
-import { environment } from './environments/environment';
+import * as dotenv from 'dotenv';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+dotenv.config({ path: '.env.local' });
 const angularApp = new AngularNodeAppEngine();
 
 app.use(express.json());
@@ -60,11 +61,6 @@ app.post('/api/generateStory', async (req, res) => {
 
 app.post('/api/imageGen', async (req, res) => {
   const { imagePrompt } = req.body;
-  const CLOUDFLARE_API_TOKEN = environment.CLOUDFLARE_WORKER_AI_TOKEN;
-  const model = '@cf/black-forest-labs/flux-1-schnell';
-  const url = environment.CLOUDFLARE_URL + model || '';
-
-  const prompt = `${imagePrompt}`;
 
   try {
     const { imageUri } = await imageGenerationFlow({

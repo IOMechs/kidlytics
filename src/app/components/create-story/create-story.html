@@ -31,7 +31,7 @@
       }
 
       <div
-        class="flex md:flex-row flex-col items-center justify-between w-full mt-6"
+        class="flex md:flex-row gap-4 flex-col items-center justify-between w-full mt-6"
       >
         @if(index() > 0) {
         <button
@@ -40,26 +40,22 @@
         >
           Previous
         </button>
+        } @if(index() === lengthOfQuestions - 1) {
+        <button
+          class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition disabled:cursor-not-allowed disabled:hover:bg-[var(--primary-color)]"
+          (click)="submitAnswers()"
+          [disabled]="loading()"
+        >
+          {{loading() ? "Generating..." : "Generate"}}
+        </button>
+        } @else {
+        <button
+          class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          (click)="goToNext()"
+        >
+          Next
+        </button>
         }
-
-        <div class="mt-4 md:mt-0 ml-auto">
-          @if(index() === lengthOfQuestions - 1) {
-          <button
-            class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
-            (click)="submitAnswers()"
-            [disabled]="loading()"
-          >
-            {{loading() ? "Generating..." : "Generate"}}
-          </button>
-          } @else {
-          <button
-            class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
-            (click)="goToNext()"
-          >
-            Next
-          </button>
-          }
-        </div>
       </div>
     </div>
   </div>

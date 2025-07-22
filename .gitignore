@@ -42,7 +42,7 @@ testem.log
 Thumbs.db
 
 #env
-src/environments/*
+
 .env*
 
 #Genkit

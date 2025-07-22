@@ -9,7 +9,7 @@
 
   <app-story-card
     [isLoading]="isLoading()"
-    [currentImage]="preloadedImages()[currentIndex()]?.src || storyParts()[currentIndex()].imageUri"
+    [currentImage]="preloadedImages()[currentIndex()]?.src || ''"
     [currentStoryPart]="storyParts()[currentIndex()]"
     [storyLength]="storyParts().length"
     [currentIndex]="currentIndex()"

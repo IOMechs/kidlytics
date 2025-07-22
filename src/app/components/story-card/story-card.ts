@@ -1,4 +1,12 @@
-import { Component, EventEmitter, input, output, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  input,
+  output,
+  Output,
+  signal,
+  effect,
+} from '@angular/core';
 import { StoryPartWithImg } from '../../model/story.type';
 
 @Component({
@@ -8,8 +16,21 @@ import { StoryPartWithImg } from '../../model/story.type';
   styleUrl: './story-card.css',
 })
 export class StoryCard {
+  constructor() {
+    effect((): void => {
+      // This will run every time currentImage() changes
+      const img = this.currentImage();
+      if (img) {
+        this.imageLoaded.set(false); // reset loading state
+      }
+    });
+  }
+
+  imageLoaded = signal(false);
+
   isLoading = input<boolean>();
   currentIndex = input<number>(0);
+
   currentImage = input<string>('');
   currentStoryPart = input<StoryPartWithImg>({
     content: '',
@@ -18,6 +39,8 @@ export class StoryCard {
   storyLength = input<number>(0);
 
   changeIndex = output<number>();
+
+  // emit an event which sets current image to "" on change of card
 
   prevCard(): void {
     if (this.currentIndex() > 0) {
@@ -28,6 +51,7 @@ export class StoryCard {
   nextCard(): void {
     if (this.currentIndex() < this.storyLength() - 1) {
       this.changeIndex.emit(this.currentIndex() + 1);
+      this.imageLoaded.set(false);
     }
   }
 }

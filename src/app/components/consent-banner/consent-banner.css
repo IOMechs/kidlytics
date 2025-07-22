@@ -1,0 +1,22 @@
+.consent-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+background: color-mix(in srgb, var(--primary) 50%, black);
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+.consent-banner button {
+  margin-left: 1rem;
+  background: var(--bg-light);
+  color: color-mix(in srgb, var(--primary) 50%, black);
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+}

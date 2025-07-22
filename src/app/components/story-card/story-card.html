@@ -4,17 +4,10 @@
 <p>Loading Story</p>
 } @else {
 <div
-  class="story-navigation flex items-center justify-center w-full max-w-md mx-auto"
+  class="story-navigation flex items-center justify-center w-full max-w-md mx-auto relative"
 >
-  <button
-    class="navigation-button px-4 h-12 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
-    (click)="prevCard()"
-    [disabled]="currentIndex() === 0"
-  >
-    ←
-  </button>
-
-  <div class="story-card-container flex-1 mx-2">
+  <!-- Card with improved layout -->
+  <div class="story-card-container w-full">
     <div
       class="story-card flex flex-col items-center gap-4 p-4 rounded-xl shadow-md bg-[var(--bg-light)] text-[var(--secondary-color)]"
     >
@@ -22,13 +15,13 @@
         <div
           class="absolute inset-0 rounded-lg border-4 border-[var(--primary-color)] shadow-sm"
         >
-          @if (currentImage()) {
+          @if (currentImage() !== "") {
           <img
-            [src]="currentImage() || currentStoryPart().imageUri"
+            [src]="currentImage()"
             alt="Story image"
             class="w-full h-full object-cover rounded-sm"
+            onload="imageLoaded.set(true)"
           />
-
           } @else {
           <div class="w-full h-full bg-gray-200 animate-pulse">
             <div
@@ -37,13 +30,12 @@
               Loading Image...
             </div>
           </div>
-
           }
         </div>
       </div>
 
       <div
-        class="content-container w-full px-1 text-base sm:text-lg text-gray-800 leading-relaxed text-center"
+        class="content-container w-full px-3 text-base sm:text-lg text-gray-800 leading-relaxed text-center"
       >
         <p>{{ currentStoryPart().content }}</p>
       </div>
@@ -55,11 +47,37 @@
   </div>
 
   <button
-    class="navigation-button px-4 py-2 bg-[var(--primary-color)] cursor-pointer text-white rounded-full shadow-md disabled:opacity-30"
+    class="navigation-button left-button"
+    (click)="prevCard()"
+    [disabled]="currentIndex() === 0"
+    [class.disabled]="currentIndex() === 0"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="currentColor"
+    >
+      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+    </svg>
+  </button>
+
+  <button
+    class="navigation-button right-button"
     (click)="nextCard()"
     [disabled]="currentIndex() === storyLength()-1"
+    [class.disabled]="currentIndex() === storyLength()-1"
   >
-    →
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="currentColor"
+    >
+      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+    </svg>
   </button>
 </div>
 }

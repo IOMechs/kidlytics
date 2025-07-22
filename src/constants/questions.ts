@@ -3,7 +3,8 @@ export const STORY_QUESTIONS = [
     question: 'Who is this story for?',
     isMcq: false,
     options: [], // Freeform input: Name and Age
-    placeholder: 'e.g. Susan a 7 years old girl from Italy',
+    placeholder:
+      'e.g. Susan a 7 years old girl from Italy OR Grade 5 students living in South Asia',
   },
   {
     question: 'What is their age group ',
