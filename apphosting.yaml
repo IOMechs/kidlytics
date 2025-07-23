@@ -57,6 +57,7 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
   - variable: PORT
     value: 8080
     availability:
@@ -68,5 +69,5 @@ env:
 
 # Build and run commands
 scripts:
-  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production"
+  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production && ng run kideytics:server"
   runCommand: "node server.js"
