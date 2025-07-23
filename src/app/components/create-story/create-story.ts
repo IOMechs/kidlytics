@@ -61,40 +61,35 @@ export class CreateStory {
   };
 
   submitAnswers = async () => {
-    console.log('Submitting', Math.random());
-    this.emitLoadingEvent(true);
+    this.storyService
+      .getStoryAndImage(this.answers)
+      .pipe(
+        catchError((error) => {
+          console.error('Error occurred while generating story/image:', error);
+          this.emitLoadingEvent(false);
 
-    setTimeout(() => this.emitLoadingEvent(false), 2000);
+          this.statusEvent.emit({
+            status: 'Error',
+            message: 'Failed to generate story or image. Please try again.',
+            url: '',
+          });
 
-    // this.storyService
-    //   .getStoryAndImage(this.answers)
-    //   .pipe(
-    //     catchError((error) => {
-    //       console.error('Error occurred while generating story/image:', error);
-    //       this.emitLoadingEvent(false);
+          // Return an empty observable to stop further processing
+          return of(null);
+        })
+      )
+      .subscribe((p) => {
+        if (!p) return; // already handled in catchError
 
-    //       this.statusEvent.emit({
-    //         status: 'Error',
-    //         message: 'Failed to generate story or image. Please try again.',
-    //         url: '',
-    //       });
+        this.emitLoadingEvent(false);
 
-    //       // Return an empty observable to stop further processing
-    //       return of(null);
-    //     })
-    //   )
-    //   .subscribe((p) => {
-    //     if (!p) return; // already handled in catchError
+        this.statusEvent.emit({
+          status: p.status,
+          message: p.message,
+          url: p.url,
+        });
 
-    //     this.emitLoadingEvent(false);
-
-    //     this.statusEvent.emit({
-    //       status: p.status,
-    //       message: p.message,
-    //       url: p.url,
-    //     });
-
-    //     console.log(p.url);
-    //   });
+        console.log(p.url);
+      });
   };
 }
