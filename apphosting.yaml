@@ -69,5 +69,5 @@ env:
 
 # Build and run commands
 scripts:
-  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production && ng run kidelytics:server"
-  runCommand: "node server.js"
+  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production"
+  runCommand: "node dist/kidelytics/server.mjs"
