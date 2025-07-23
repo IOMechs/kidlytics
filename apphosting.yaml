@@ -57,6 +57,11 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: PORT
+    value: 8080
+    availability:
+      - BUILD
+      - RUNTIME
 
   - variable: apiKey
     secret: projects/95440248217/secrets/apiKey/versions/2

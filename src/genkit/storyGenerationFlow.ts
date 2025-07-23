@@ -12,13 +12,6 @@ const ai = genkit({
     }),
   ],
 });
-// const ai = genkit({
-//   plugins: [
-//     googleAI({
-//       apiKey: environment.GEMINI_API_KEY,
-//     }),
-//   ],
-// });
 
 export const storyGenerationFlow = ai.defineFlow(
   {

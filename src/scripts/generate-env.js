@@ -11,7 +11,7 @@ if (fs.existsSync(envPath)) {
   console.log(`Loading environment variables from ${envPath}`);
   const envConfig = dotenv.parse(fs.readFileSync(envPath));
   envVars = { ...envConfig };
-  
+
   // Merge with process.env
   for (const key in envVars) {
     process.env[key] = envVars[key];
@@ -20,12 +20,11 @@ if (fs.existsSync(envPath)) {
   console.warn('.env.local file not found. Using existing environment variables.');
 }
 
-// Get environment variables with fallbacks
+// Helper to safely retrieve env vars with fallback
 const getEnvVar = (name, fallback = '') => process.env[name] || envVars[name] || fallback;
 
-// Here process.env is available because this runs in Node.js during build
-const environmentFileContent = `
-export const environment = {
+// Angular-compatible environment file content
+const environmentFileContent = `export const environment = {
   production: ${getEnvVar('NODE_ENV') === 'production' || getEnvVar('production') === 'true'},
   apiUrl: '${getEnvVar('apiUrl', 'https://api.example.com')}',
   FRONTEND_BASE_URL: '${getEnvVar('FRONTEND_BASE_URL', 'http://localhost:4200')}',
@@ -39,12 +38,28 @@ export const environment = {
 };
 `;
 
+// Ensure the environments directory exists
+const envDir = path.resolve('./src/environments');
+if (!fs.existsSync(envDir)) {
+  fs.mkdirSync(envDir, { recursive: true });
+  console.log('Created directory: ./src/environments');
+}
+
+// Write or overwrite environment files
+const writeEnvFile = (fileName) => {
+  const filePath = path.join(envDir, fileName);
+  fs.writeFileSync(filePath, environmentFileContent);
+  console.log(`${fileName} generated successfully.`);
+};
+
+writeEnvFile('environment.ts');
+writeEnvFile('environment.prod.ts');
+
 // Debug log
 console.log('Environment variables loaded:');
 console.log({
   apiUrl: getEnvVar('apiUrl', 'https://api.example.com'),
   FRONTEND_BASE_URL: getEnvVar('FRONTEND_BASE_URL', 'http://localhost:4200'),
-  // Omit sensitive data from logs
   apiKey: getEnvVar('apiKey') ? '****' : 'not set',
   authDomain: getEnvVar('authDomain'),
   projectId: getEnvVar('projectId'),
@@ -53,7 +68,3 @@ console.log({
   appId: getEnvVar('appId') ? '****' : 'not set',
   gcpProjectId: getEnvVar('gcpProjectId'),
 });
-
-fs.writeFileSync('./src/environments/environment.prod.ts', environmentFileContent);
-fs.writeFileSync('./src/environments/environment.ts', environmentFileContent);
-console.log('Environment files generated');
