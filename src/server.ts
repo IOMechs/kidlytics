@@ -43,9 +43,7 @@ app.use(
     redirect: false,
   })
 );
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist/your-angular-app-name/index.html'));
-});
+
 app.post('/api/test', (req, res) => {
   console.log('BODY:', req.body); // should log your POST data
   res.json({ received: req.body });
