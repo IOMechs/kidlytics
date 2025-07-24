@@ -77,8 +77,8 @@ export class DisplayStory implements OnInit {
         this.imagesLoaded.set([...newLoadedStates]);
         this.preloadedImages.set([...loadedImages]);
       };
-      img.onerror = () => {
-        console.error(`Failed to load image at index ${index}`);
+      img.onerror = (e) => {
+        console.error(`Failed to load image at index ${index} ${e}`);
       };
       img.src = part.imageUri;
     });
