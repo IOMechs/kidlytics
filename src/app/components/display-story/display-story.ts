@@ -1,3 +1,4 @@
+import { SocialShare } from '../social-share/social-share';
 import { ActivatedRoute } from '@angular/router';
 import { StoryPartWithImg } from '../../model/story.type';
 import { doc, getDoc } from 'firebase/firestore';
@@ -28,6 +29,7 @@ import {
     MatIconModule,
     MatBadgeModule,
     CommonModule,
+    SocialShare,
   ],
 })
 export class DisplayStory implements OnInit {
@@ -164,6 +166,10 @@ export class DisplayStory implements OnInit {
 
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
+  }
+
+  getShareUrl(): string {
+    return window.location.href;
   }
 }
 

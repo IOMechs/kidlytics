@@ -1,0 +1,11 @@
+.social-share-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+}
+
+.social-share-buttons button svg {
+  width: 24px;
+  height: 24px;
+}
