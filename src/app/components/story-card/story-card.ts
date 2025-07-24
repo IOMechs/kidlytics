@@ -40,7 +40,9 @@ export class StoryCard {
 
   changeIndex = output<number>();
 
-  // emit an event which sets current image to "" on change of card
+  onImageLoad(): void {
+    this.imageLoaded.set(true);
+  }
 
   prevCard(): void {
     if (this.currentIndex() > 0) {

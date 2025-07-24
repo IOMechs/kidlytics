@@ -20,7 +20,7 @@
             [src]="currentImage()"
             alt="Story image"
             class="w-full h-full object-cover rounded-sm"
-            onload="imageLoaded.set(true)"
+            (load)="onImageLoad()"
           />
           } @else {
           <div class="w-full h-full bg-gray-200 animate-pulse">
