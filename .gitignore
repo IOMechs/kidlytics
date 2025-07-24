@@ -44,7 +44,7 @@ Thumbs.db
 #env
 
 .env*
-src/environments/*
+/src/environments
 
 #Genkit
 /.genkit

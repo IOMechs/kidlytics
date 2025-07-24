@@ -57,3 +57,51 @@
     max-width: 600px;
   }
 }
+
+.story-container {
+  position: relative;
+}
+
+.age-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  height: 26px; /* Match the height of the button */
+  line-height: 1;
+  background-color: var(--primary-color);;
+}
+
+.info-button {
+  font-size: 0.75rem;
+  min-height: unset;
+  min-width: unset;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ .mat-icon {
+  font-size: 30px;
+  width: 50px; 
+  height: 40px; 
+  display: flex;
+  align-items: center;
+  color: var(--primary-color);
+
+
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flex-col-mobile {
+    flex-direction: column;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flex-col-mobile {
+    flex-direction: column;
+  }
+}

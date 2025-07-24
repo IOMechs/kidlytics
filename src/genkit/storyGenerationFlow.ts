@@ -29,6 +29,7 @@ export const storyGenerationFlow = ai.defineFlow(
             ),
         })
       ),
+      ageGroup: z.string(),
     }),
   },
   async ({ userContext }) => {
@@ -51,6 +52,7 @@ export const storyGenerationFlow = ai.defineFlow(
             - Rich in visuals and emotions to inspire picture generation
           - For each part, also return a **simple, Imagen-safe image prompt** that represents the scene in a **cartoon/digital art** style
           - Even if the story content is in some other content write the image prompt in English only
+          - Also, provide the idead age group for this story e.g. 5+
 
           ---
 
@@ -73,6 +75,9 @@ export const storyGenerationFlow = ai.defineFlow(
                   ),
               })
             ),
+            ageGroup: z
+              .string()
+              .describe('Age group for which this story is ideal'),
           }),
         },
       });

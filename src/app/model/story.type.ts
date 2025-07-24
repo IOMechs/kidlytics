@@ -21,4 +21,5 @@ export type ModalContentT = StoryGenerationStatus & {
 export type Story = {
   parts: StoryPart[];
   title: string;
+  ageGroup: string;
 };

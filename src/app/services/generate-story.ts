@@ -59,10 +59,14 @@ export class GenerateStory {
     userContext: Record<string, string>
   ): Observable<StoryGenerationStatus> {
     let storyName = `Untitled Story`;
+    let userPrompt: Record<string, string> = {};
+    let ageGroup = '5+';
 
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
         storyName = story.title;
+        userPrompt = userContext;
+        ageGroup = story.ageGroup;
         return from(story.parts.map((part, index) => ({ ...part, index })));
       }),
       concatMap((partObj) =>
@@ -87,13 +91,16 @@ export class GenerateStory {
           name: storyName,
           storyParts: storyPartsWithImages,
           createdAt: new Date(),
+          userPrompt,
+          ageGroup,
         };
 
         try {
           return from(addDoc(collection(db, 'stories'), storyDoc)).pipe(
             map((docRef) => ({
               status: 'Success' as const,
-              message: 'Story generated and stored in Firestore successfully.',
+              message:
+                'Your story has been generated. Click the link below and enjoy reading...',
               url: `${environment.FRONTEND_BASE_URL}/viewStory?id=${docRef.id}`,
             }))
           );
