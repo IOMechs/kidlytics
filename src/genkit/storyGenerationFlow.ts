@@ -111,6 +111,7 @@ export const imageGenerationFlow = ai.defineFlow(
             mimeType: 'image/jpeg',
             compressionQuality: 40,
           },
+          aspectRatio: '16:9',
         },
       });
 
