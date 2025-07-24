@@ -61,6 +61,7 @@ export class CreateStory {
   };
 
   submitAnswers = async () => {
+    this.emitLoadingEvent(true);
     this.storyService
       .getStoryAndImage(this.answers)
       .pipe(
