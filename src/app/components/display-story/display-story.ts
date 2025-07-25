@@ -37,7 +37,7 @@ export class DisplayStory implements OnInit {
   storyParts = signal<StoryPartWithImg[]>([]);
   storyTitle = signal<string>('');
   userPrompt = signal<Record<string, string>>({});
-  ageGroup = signal<string>('5+');
+  ageGroup = signal<string>('');
   isLoading = signal<boolean>(true);
   currentIndex = signal<number>(0);
   error = signal<string | null>(null);
@@ -84,7 +84,7 @@ export class DisplayStory implements OnInit {
             ...data['userPrompt'],
             'Generated On': this.formatDate(data['createdAt']),
           });
-          this.ageGroup.set(data['ageGroup']);
+          this.ageGroup.set(data['ageGroup'] || '5+');
           // Initialize image loaded states
           this.imagesLoaded.set(Array(data['storyParts'].length).fill(false));
 
