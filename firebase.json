@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/kidelytics",
+    "public": "dist/kidlytics",
     "ignore": [
       "firebase.json",
       "**/.*",

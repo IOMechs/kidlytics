@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "kidelytics": {
+    "kidlytics": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -67,10 +67,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "kidelytics:build:production"
+              "buildTarget": "kidlytics:build:production"
             },
             "development": {
-              "buildTarget": "kidelytics:build:development"
+              "buildTarget": "kidlytics:build:development"
             }
           },
           "defaultConfiguration": "development"

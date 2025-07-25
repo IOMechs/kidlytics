@@ -1,10 +1,10 @@
-# Kidelytics: AI-Powered Story Generator for Kids
+# Kidlytics: AI-Powered Story Generator for Kids
 
-Kidelytics is an Angular-based web application that leverages the power of Google Cloud's Vertex AI to generate engaging and personalized stories for children. By answering a series of fun questions, parents and educators can create unique, illustrated stories tailored to a child's interests and learning goals, all orchestrated by the Genkit framework.
+kidlytics is an Angular-based web application that leverages the power of Google Cloud's Vertex AI to generate engaging and personalized stories for children. By answering a series of fun questions, parents and educators can create unique, illustrated stories tailored to a child's interests and learning goals, all orchestrated by the Genkit framework.
 
 ## Table of Contents
 
-- [Kidelytics: AI-Powered Story Generator for Kids](#kidelytics-ai-powered-story-generator-for-kids)
+- [kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
   - [Table of Contents](#table-of-contents)
   - [Technologies Used](#technologies-used)
   - [Getting Started](#getting-started)
@@ -52,8 +52,8 @@ Follow these steps to get a local copy of the project up and running on your mac
 ### 1. Clone the Repository
 
 ````bash
-git clone https://github.com/your-username/kidelytics.git
-cd kidelytics```
+git clone https://github.com/your-username/kidlytics.git
+cd kidlytics```
 
 ### 2. Install Dependencies
 

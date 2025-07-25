@@ -1,5 +1,5 @@
 {
-  "name": "kidelytics",
+  "name": "kidlytics",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:api": "tsx --watch src/server.ts",
-    "serve:ssr:kidelytics": "node dist/kidelytics/server/server.mjs"
+    "serve:ssr:kidlytics": "node dist/kidlytics/server/server.mjs"
   },
   "private": true,
   "dependencies": {

@@ -37,7 +37,7 @@ export class DisplayStory implements OnInit {
   storyParts = signal<StoryPartWithImg[]>([]);
   storyTitle = signal<string>('');
   userPrompt = signal<Record<string, string>>({});
-  ageGroup = signal<string>('');
+  ageGroup = signal<string>('5+');
   isLoading = signal<boolean>(true);
   currentIndex = signal<number>(0);
   error = signal<string | null>(null);

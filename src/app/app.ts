@@ -14,7 +14,7 @@ import { registerIcons } from './app.config';
   styleUrl: './app.css',
 })
 export class App {
-  protected title = 'kidelytics';
+  protected title = 'kidlytics';
 
   constructor() {
     const iconRegistry = inject(MatIconRegistry);
