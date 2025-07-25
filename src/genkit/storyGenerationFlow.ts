@@ -117,12 +117,10 @@ export const imageGenerationFlow = ai.defineFlow(
           safetySetting: 'block_few',
           aspectRatio: '16:9',
           personGeneration: 'allow_all',
-          addWatermark: false,
           outputOptions: {
             mimeType: 'image/jpeg',
             compressionQuality: 40,
           },
-          seed,
         },
       });
 

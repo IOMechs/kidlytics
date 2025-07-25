@@ -72,7 +72,7 @@ app.post('/api/imageGen', async (req, res) => {
     res.json({ imageUri });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Image while generating image' }); // or throw error if you want to handle it upstream
+    res.status(500).json({ error: `Error while generating image ${error}` }); // or throw error if you want to handle it upstream
   }
 });
 
