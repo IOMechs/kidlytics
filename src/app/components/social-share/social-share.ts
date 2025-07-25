@@ -15,17 +15,38 @@ export class SocialShare {
   @Input() title: string = '';
 
   shareOnLinkedIn() {
-    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl)}`;
+    // Add timestamp query parameter for cache busting
+    const timestamp = new Date().getTime();
+    const cachebustedUrl = `${this.shareUrl}${
+      this.shareUrl.includes('?') ? '&' : '?'
+    }v=${timestamp}`;
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+      cachebustedUrl
+    )}`;
     window.open(linkedInUrl, '_blank');
   }
 
   shareOnReddit() {
-    const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(this.shareUrl)}&title=${encodeURIComponent(this.title)}`;
+    // Add timestamp query parameter for cache busting
+    const timestamp = new Date().getTime();
+    const cachebustedUrl = `${this.shareUrl}${
+      this.shareUrl.includes('?') ? '&' : '?'
+    }v=${timestamp}`;
+    const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(
+      cachebustedUrl
+    )}&title=${encodeURIComponent(this.title)}`;
     window.open(redditUrl, '_blank');
   }
 
   shareOnX() {
-    const xUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(this.shareUrl)}&text=${encodeURIComponent(this.title)}`;
+    // Add timestamp query parameter for cache busting
+    const timestamp = new Date().getTime();
+    const cachebustedUrl = `${this.shareUrl}${
+      this.shareUrl.includes('?') ? '&' : '?'
+    }v=${timestamp}`;
+    const xUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+      cachebustedUrl
+    )}&text=${encodeURIComponent(this.title)}`;
     window.open(xUrl, '_blank');
   }
 }
