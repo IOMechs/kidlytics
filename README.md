@@ -113,6 +113,9 @@ export const environment = {
   storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
   messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
   appId: "YOUR_FIREBASE_APP_ID",
+  apiUrl: "",
+  FRONTEND_BASE_URL: "",
+  gcpProjectId: "",
 };
 ```
 
