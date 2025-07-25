@@ -32,6 +32,7 @@
       </div>
     </div>
   </div>
+  @defer{
 
   <app-story-card
     [isLoading]="isLoading()"
@@ -46,4 +47,5 @@
     [imageUrl]="preloadedImages()[0]?.src || '' "
     [title]="storyTitle()"
   ></app-social-share>
+  }
 </div>

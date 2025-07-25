@@ -15,6 +15,7 @@ import {
   MatDialogModule,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-display-story',
@@ -55,7 +56,7 @@ export class DisplayStory implements OnInit {
 
   readonly dialog = inject(MatDialog);
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private meta: Meta) {}
 
   ngOnInit(): void {
     console.log('initing');
@@ -93,6 +94,50 @@ export class DisplayStory implements OnInit {
 
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
+
+          this.meta.removeTag('property="og:title"');
+          this.meta.removeTag('property="og:description"');
+          this.meta.removeTag('property="og:image"');
+          this.meta.removeTag('property="og:url"');
+          this.meta.removeTag('property="og:type"');
+          this.meta.removeTag('name="twitter:card"');
+          this.meta.removeTag('name="twitter:title"');
+          this.meta.removeTag('name="twitter:description"');
+          this.meta.removeTag('name="twitter:image"');
+
+          // Add basic meta description
+          this.meta.updateTag({
+            name: 'description',
+            content: `${this.storyParts()[0].content.slice(0, 50)}...`,
+          });
+
+          // Add Open Graph / Facebook meta tags
+          this.meta.addTags([
+            { property: 'og:title', content: this.storyTitle() },
+            {
+              property: 'og:description',
+              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
+            },
+            {
+              property: 'og:image',
+              content: data['storyParts'][0].imageUri || '',
+            },
+            { property: 'og:type', content: 'article' },
+          ]);
+
+          // Add Twitter meta tags
+          this.meta.addTags([
+            { name: 'twitter:card', content: 'summary_large_image' },
+            { name: 'twitter:title', content: this.storyTitle() },
+            {
+              name: 'twitter:description',
+              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
+            },
+            {
+              name: 'twitter:image',
+              content: data['storyParts'][0].imageUri || '',
+            },
+          ]);
         }
       } catch (err) {
         console.error(err);
