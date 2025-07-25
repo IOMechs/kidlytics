@@ -49,8 +49,11 @@ export const storyGenerationFlow = ai.defineFlow(
             - 3–6 sentences long
             - Simple enough for children (ages 4–10) to understand
             - Wholesome, imaginative, and positive
+            - Must be relatable to the person whom the story is for. This info can be found in the provided input
             - Rich in visuals and emotions to inspire picture generation
           - For each part, also return a **simple, Imagen-safe image prompt** that represents the scene in a **cartoon/digital art** style
+          - The image prompt of each part should be deterministic such that the imagegen model maintains visual consistency across the images. 
+          - In each Image Prompt , make sure visual attributes of each character and object is specified and attributes of one character or object must remain same across all story parts
           - Even if the story content is in some other content write the image prompt in English only
           - Also, provide the idead age group for this story e.g. 5+
 
@@ -97,12 +100,13 @@ export const imageGenerationFlow = ai.defineFlow(
     name: 'imageGenerationFlow',
     inputSchema: z.object({
       imagePrompt: z.string(),
+      seed: z.number().optional(),
     }),
     outputSchema: z.object({
       imageUri: z.string(),
     }),
   },
-  async ({ imagePrompt }) => {
+  async ({ imagePrompt, seed }) => {
     try {
       const response = await ai.generate({
         model: vertexAI.model('imagen-3.0-fast-generate-001'),
@@ -111,12 +115,14 @@ export const imageGenerationFlow = ai.defineFlow(
         output: { format: 'media' },
         config: {
           safetySetting: 'block_few',
+          aspectRatio: '16:9',
           personGeneration: 'allow_all',
+          addWatermark: false,
           outputOptions: {
             mimeType: 'image/jpeg',
             compressionQuality: 40,
           },
-          aspectRatio: '16:9',
+          seed,
         },
       });
 

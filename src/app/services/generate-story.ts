@@ -38,10 +38,11 @@ export class GenerateStory {
     });
   }
 
-  generateImage(imagePrompt: string): Observable<string> {
+  generateImage(imagePrompt: string, seed?: number): Observable<string> {
     return this.http
       .post<{ imageUri: string }>(this.url + '/api/imageGen', {
         imagePrompt,
+        seed,
       })
       .pipe(
         map((res) => {
@@ -61,7 +62,9 @@ export class GenerateStory {
     let storyName = `Untitled Story`;
     let userPrompt: Record<string, string> = {};
     let ageGroup = '5+';
-
+    let prevImgBaseUrl = '';
+    let prevImgPrompt = '';
+    let seed = Math.floor(Math.random() * 10);
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
         storyName = story.title;
@@ -69,22 +72,37 @@ export class GenerateStory {
         ageGroup = story.ageGroup;
         return from(story.parts.map((part, index) => ({ ...part, index })));
       }),
-      concatMap((partObj) =>
-        this.generateImage(partObj.content).pipe(
+      concatMap((partObj) => {
+        let imagePromptWithContext = `Current Scene Prompt: ${partObj.imagePrompt}
+
+        Reference: This image continues the story from the previously generated image: ${prevImgBaseUrl}
+
+        Previous Prompt: ${prevImgPrompt}
+
+        Instructions:
+          - Ensure the same characters and objects appear with consistent looks across both images (e.g., facial features, clothing, colors, accessories).
+          - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.
+          - Style: Keep the illustration cartoonish and animated.
+`;
+        return this.generateImage(imagePromptWithContext, seed).pipe(
           switchMap((base64Image) => {
+            prevImgPrompt = partObj.imagePrompt;
             // Upload image to Firebase Storage
             const imagePath = `stories/${Date.now()}-part-${partObj.index}.png`;
             const imageRef = ref(storage, imagePath);
             return from(uploadString(imageRef, base64Image, 'data_url')).pipe(
               switchMap(() => from(getDownloadURL(imageRef))),
-              map((downloadUrl) => ({
-                content: partObj.content,
-                imageUri: downloadUrl,
-              }))
+              map((downloadUrl) => {
+                prevImgBaseUrl = downloadUrl;
+                return {
+                  content: partObj.content,
+                  imageUri: downloadUrl,
+                };
+              })
             );
           })
-        )
-      ),
+        );
+      }),
       toArray(),
       concatMap((storyPartsWithImages: StoryPartWithImg[]) => {
         const storyDoc = {
