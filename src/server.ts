@@ -56,16 +56,17 @@ app.post('/api/generateStory', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('Flow error:', err);
-    res.status(500).json({ error: 'Failed to generate story' });
+    res.status(500).json({ error: `Failed to generate story ${err}` });
   }
 });
 
 app.post('/api/imageGen', async (req, res) => {
-  const { imagePrompt } = req.body;
+  const { imagePrompt, seed } = req.body;
 
   try {
     const { imageUri } = await imageGenerationFlow({
       imagePrompt,
+      seed,
     });
     if (!imageUri) throw new Error('Error while generating image');
     res.json({ imageUri });
