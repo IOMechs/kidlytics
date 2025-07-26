@@ -7,8 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "generate:env": "node scripts/generate-env.js",
     "serve:api": "tsx --watch src/server.ts",
-    "serve:ssr:kidlytics": "node dist/kidlytics/server/server.mjs"
+    "serve:ssr:kidlytics": "node dist/kidlytics/server/server.mjs",
+    "setup:env": "node ./scripts/generate-env.js"
   },
   "private": true,
   "dependencies": {

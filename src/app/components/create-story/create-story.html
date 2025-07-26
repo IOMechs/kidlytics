@@ -49,15 +49,17 @@
         <!-- Placeholder to keep alignment -->
         <div class="w-36"></div>
         } @if(index() === lengthOfQuestions - 1) {
-        <button
-          class="btn btn-primary w-36"
-          (click)="submitAnswers()"
-          [disabled]="loading()"
-        >
-          @if(loading()) {
-          <span class="loading loading-spinner"></span>
-          Generating... } @else { Generate }
-        </button>
+        <div>
+          <button
+            class="btn btn-primary w-36"
+            (click)="submitAnswers()"
+            [disabled]="loading() || !canGenerate"
+          >
+            @if(loading()) {
+            <span class="loading loading-spinner"></span>
+            Generating... } @else { Generate }
+          </button>
+        </div>
         } @else {
         <button
           class="btn btn-primary w-36"
@@ -69,10 +71,30 @@
         }
       </div>
     </div>
-    @if(loading()) {
-    <p class="p-4 text-center">
-      Generating images can take some time. Please wait...
-    </p>
+    @if(!canGenerate) {
+    <div class="text-center p-4">
+      <p
+        class="text-error text-sm cursor-pointer"
+        (click)="togglePasswordInput()"
+      >
+        You have reached the generation limit
+        ({{generationCount}}/{{generationLimit}}).
+      </p>
+      @if(showPasswordInput()) {
+      <div class="form-control mt-8 flex items-center gap-2 justify-center">
+        <input
+          type="password"
+          placeholder="Enter password"
+          class="input input-bordered w-full max-w-xs"
+          [(ngModel)]="password"
+          (keyup.enter)="submitPassword()"
+        />
+        <button class="btn btn-primary" (click)="submitPassword()">
+          Unlock
+        </button>
+      </div>
+      }
+    </div>
     }
   </div>
 </div>

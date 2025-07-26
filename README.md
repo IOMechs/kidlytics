@@ -4,14 +4,13 @@ kidlytics is an Angular-based web application that leverages the power of Google
 
 ## Table of Contents
 
-- [kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
+- [Kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
   - [Table of Contents](#table-of-contents)
   - [Technologies Used](#technologies-used)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Install Dependencies](#2-install-dependencies)
-    - [3. Set Up Google Cloud & Firebase](#3-set-up-google-cloud--firebase)
+    - [3. Set Up Google Cloud \& Firebase](#3-set-up-google-cloud--firebase)
     - [4. Configure Environment Variables](#4-configure-environment-variables)
     - [5. Run the Application](#5-run-the-application)
   - [Project Structure](#project-structure)
@@ -99,27 +98,35 @@ This project uses Google Cloud for AI services and Firebase for the database.
 
 ### 4. Configure Environment Variables
 
-Create a new file in the `src/environments/` directory named `environment.ts`. This file will hold your non-secret Firebase configuration.
+Instead of creating the environment files manually, this project uses a script to generate them from a `.env` file.
 
-**`src/environments/environment.ts`**:
+1.  **Create a `.env` file** in the root of the project.
 
-```typescript
-export const environment = {
-  production: false,
-  // Paste the firebaseConfig object from the Firebase console here
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-  projectId: "YOUR_FIREBASE_PROJECT_ID", // Should match your GCP Project ID
-  storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "YOUR_FIREBASE_APP_ID",
-  apiUrl: "",
-  FRONTEND_BASE_URL: "",
-  gcpProjectId: "",
-};
-```
+2.  **Add your configuration keys** to the `.env` file. This file should include your Firebase project details and your Google Cloud Project ID.
 
-You do not need to add any Vertex AI or Gemini API keys here. Genkit will automatically use the credentials you set up with the `gcloud` CLI.
+    ```env
+    # Firebase Configuration
+    API_KEY="YOUR_FIREBASE_API_KEY"
+    AUTH_DOMAIN="YOUR_FIREBASE_AUTH_DOMAIN"
+    PROJECT_ID="YOUR_FIREBASE_PROJECT_ID"
+    STORAGE_BUCKET="YOUR_FIREBASE_STORAGE_BUCKET"
+    MESSAGING_SENDER_ID="YOUR_FIREBASE_MESSAGING_SENDER_ID"
+    APP_ID="YOUR_FIREBASE_APP_ID"
+
+    # Google Cloud Configuration
+    GCP_PROJECT_ID="YOUR_GCP_PROJECT_ID" # Should be the same as PROJECT_ID
+
+    # Application Settings
+    STORY_GENERATION_LIMIT=3
+    enableStoryGenerationLimit=true
+    ADMIN_PASSWORD="your_secret_password"
+    ```
+
+3.  **Run the script** to generate the `environment.ts` and `environment.development.ts` files:
+    ```bash
+    npm run generate:env
+    ```
+This command will read your `.env` file and create the necessary configuration for the Angular application. You do not need to add any Vertex AI or Gemini API keys here. Genkit will automatically use the credentials you set up with the `gcloud` CLI.
 
 ### 5. Run the Application
 
