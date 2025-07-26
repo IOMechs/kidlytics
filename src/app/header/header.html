@@ -1,10 +1,40 @@
-<header class="header">
-  <div class="container">
-    <div class="logo"><a href="">Kidlytics</a></div>
-    <nav class="nav">
-      <!-- You can add navigation links here -->
-      <!-- <a href="#" class="nav-link">Home</a>
-      <a href="#" class="nav-link">About</a> -->
-    </nav>
+<div class="navbar bg-base-300 shadow-sm">
+  <div class="flex-1">
+    <a routerLink="/" class="btn btn-ghost text-xl">Kidlytics</a>
   </div>
-</header>
+  <div class="flex-none">
+    <div class="dropdown dropdown-end gap-4 flex">
+      <div role="button" class="btn btn-secondary btn-circle">
+        <a
+          matTooltip="Github repo"
+          matTooltipPosition="below"
+          href="https://github.com/iomechs/kidlytics"
+          target="_blank"
+          ><img src="/github.svg"
+        /></a>
+      </div>
+      <div role="button" class="btn btn-ghost btn-secondary btn-circle">
+        <a
+          matTooltip="Contact us"
+          matTooltipPosition="below"
+          href="mailto://info@iomechs.com"
+          target="_blank"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+            />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

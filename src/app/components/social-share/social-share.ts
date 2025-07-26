@@ -1,13 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-social-share',
   standalone: true,
-  imports: [MatIconModule, MatButtonModule],
+  imports: [MatIconModule, MatButtonModule, MatTooltip],
   templateUrl: './social-share.html',
-  styleUrls: ['./social-share.css'],
 })
 export class SocialShare {
   @Input() shareUrl: string = '';

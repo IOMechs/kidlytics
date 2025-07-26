@@ -1,62 +1,78 @@
-<div class="flex items-center justify-center bg-white">
-  <div
-    class="max-w-md mx-auto rounded-xl shadow-md overflow-hidden bg-[var(--bg-light)] text-[var(--secondary-color)] font-[var(--font-main)] sm:w-3/4 w-5/6"
-  >
-    <div class="p-6 flex flex-col gap-4">
-      <h2 class="text-xl font-semibold mb-2 text-[var(--primary-color)]">
+<div class="flex items-center justify-center p-4 container mx-auto max-w-4xl">
+  <div class="card sm:w-3/4 w-full shadow-xl bg-base-200">
+    <div class="card-body">
+      <h2 class="card-title text-base-content text-xl">
         {{currentQuestion().question}}
       </h2>
-      @if (currentQuestion().isMcq) { @for (opt of currentQuestion().options;
-      track opt) {
-      <label
-        class="flex items-center gap-2 space-x-2 p-2 rounded-md border border-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 transition cursor-pointer"
-      >
-        <input
-          type="radio"
-          name="answer"
-          [value]="opt"
-          class="appearance-none w-4 h-4 rounded-full border-2 border-[var(--primary-color)] checked:bg-[var(--primary-color)] checked:border-[var(--primary-color)] focus:outline-none transition"
-          [(ngModel)]="selectedAnswer"
-        />
-        {{ opt }}
-      </label>
-      } } @else {
+
+      @if (currentQuestion().isMcq) {
+      <ul class="menu bg-base-100 rounded-box shadow-md w-full gap-4 text-lg">
+        @for (opt of currentQuestion().options; track opt) {
+        <li>
+          <label class="label cursor-pointer flex items-center justify-between">
+            <span class="label-text text-base-content">{{ opt }}</span>
+            <input
+              type="radio"
+              name="answer"
+              class="radio radio-primary"
+              [value]="opt"
+              [(ngModel)]="selectedAnswer"
+            />
+          </label>
+        </li>
+        }
+      </ul>
+      } @else {
       <textarea
-        type="text"
+        class="textarea textarea-bordered textarea-primary text-lg w-full placeholder:text-slate-400"
         rows="5"
-        class="w-full px-4 py-2 rounded-md border border-[var(--primary-color)] text-[var(--secondary-color)] font-[var(--font-main)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] transition"
         [(ngModel)]="selectedAnswer"
         placeholder="{{currentQuestion().placeholder}}"
       ></textarea>
+      } @if(currentQuestion().hint) {
+      <p class="text-sm text-base-content mt-2 flex gap-4 items-center">
+        <mat-icon class="w-8!">{{currentQuestion().hintIcon}}</mat-icon>
+        <span>{{currentQuestion().hint}}</span>
+      </p>
       }
 
-      <div
-        class="flex md:flex-row gap-4 flex-col items-center justify-between w-full mt-6"
-      >
+      <div class="card-actions justify-between items-center mt-6">
         @if(index() > 0) {
         <button
-          class="w-36 px-4 py-2 rounded bg-[var(--primary-color)]/80 text-white hover:bg-blue-800 transition"
+          class="btn btn-neutral w-36"
           (click)="goToPrev()"
+          [disabled]="loading()"
         >
           Previous
         </button>
+        } @else {
+        <!-- Placeholder to keep alignment -->
+        <div class="w-36"></div>
         } @if(index() === lengthOfQuestions - 1) {
         <button
-          class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition disabled:cursor-not-allowed disabled:hover:bg-[var(--primary-color)]"
+          class="btn btn-primary w-36"
           (click)="submitAnswers()"
           [disabled]="loading()"
         >
-          {{loading() ? "Generating..." : "Generate"}}
+          @if(loading()) {
+          <span class="loading loading-spinner"></span>
+          Generating... } @else { Generate }
         </button>
         } @else {
         <button
-          class="w-36 px-4 py-2 rounded bg-[var(--primary-color)] text-white hover:bg-blue-800 transition"
+          class="btn btn-primary w-36"
           (click)="goToNext()"
+          [disabled]="loading()"
         >
           Next
         </button>
         }
       </div>
     </div>
+    @if(loading()) {
+    <p class="p-4 text-center">
+      Generating images can take some time. Please wait...
+    </p>
+    }
   </div>
 </div>

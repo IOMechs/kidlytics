@@ -1,5 +1,4 @@
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 import { environment } from '../environments/environment';
 import { vertexAI } from '@genkit-ai/vertexai';
@@ -52,7 +51,7 @@ export const storyGenerationFlow = ai.defineFlow(
             - Must be relatable to the person whom the story is for. This info can be found in the provided input
             - Rich in visuals and emotions to inspire picture generation
           - For each part, also return a **simple, Imagen-safe image prompt** that represents the scene in a **cartoon/digital art** style
-          - The image prompt of each part should be deterministic such that the imagegen model maintains visual consistency across the images. 
+          - The image prompt of each part should be deterministic such that the imagegen model maintains visual consistency across the images.
           - In each Image Prompt , make sure visual attributes of each character and object is specified and attributes of one character or object must remain same across all story parts
           - Even if the story content is in some other content write the image prompt in English only
           - Also, provide the idead age group for this story e.g. 5+
@@ -100,17 +99,33 @@ export const imageGenerationFlow = ai.defineFlow(
     name: 'imageGenerationFlow',
     inputSchema: z.object({
       imagePrompt: z.string(),
+      prevImgUrl: z.string().optional(),
       seed: z.number().optional(),
     }),
     outputSchema: z.object({
       imageUri: z.string(),
     }),
   },
-  async ({ imagePrompt, seed }) => {
+  async ({ imagePrompt, prevImgUrl, seed }) => {
     try {
       const response = await ai.generate({
         model: vertexAI.model('imagen-3.0-fast-generate-001'),
-        prompt: imagePrompt,
+        prompt: prevImgUrl
+          ? [
+              { text: imagePrompt },
+              {
+                text: `
+                  This image (to be generated) continues the story from the previously generated image see attached media. However, you have to create a new complete scene (do not include the previous scene).
+                  - Ensure the same characters and objects appear with consistent looks across both images (e.g., facial features, clothing, colors, accessories).
+                  - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.`,
+              },
+              { media: { url: prevImgUrl || '' } },
+            ]
+          : [
+              {
+                text: imagePrompt,
+              },
+            ],
 
         output: { format: 'media' },
         config: {

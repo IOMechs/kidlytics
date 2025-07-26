@@ -38,10 +38,17 @@ export class GenerateStory {
     });
   }
 
-  generateImage(imagePrompt: string, seed?: number): Observable<string> {
+  generateImage(
+    {
+      imagePrompt,
+      prevImgUrl,
+    }: { imagePrompt: string; prevImgUrl: string | null },
+    seed?: number
+  ): Observable<string> {
     return this.http
       .post<{ imageUri: string }>(this.url + '/api/imageGen', {
         imagePrompt,
+        prevImgUrl,
         seed,
       })
       .pipe(
@@ -75,16 +82,24 @@ export class GenerateStory {
       concatMap((partObj) => {
         let imagePromptWithContext = `Current Scene Prompt: ${partObj.imagePrompt}
 
-        Reference: This image continues the story from the previously generated image: ${prevImgBaseUrl}
-
-        Previous Prompt: ${prevImgPrompt}
-
-        Instructions:
-          - Ensure the same characters and objects appear with consistent looks across both images (e.g., facial features, clothing, colors, accessories).
-          - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.
+        Instructions for this new image to be generated:
           - Style: Keep the illustration cartoonish and animated.
+          - If you get another image in the context, use it as a reference for the style, facial features, etc.
+          - Do not include any text or labels in the image.
+          - If there's a previous image, ensure the characters and objects are consistent with the previous images in terms of design, colors, and overall look.
+          - If there is a previous image, do not include it in the new image, but ensure the new image continues the story from the previous one.
+          - If there is no previous image, create a new scene that fits the story context.
+          - Ensure the image is suitable for children aged ${ageGroup} and does not contain any inappropriate content.
+          - The image should be colorful, engaging, and visually appealing to children.
+          - The image should be suitable for a story about ${storyName}.
 `;
-        return this.generateImage(imagePromptWithContext, seed).pipe(
+        return this.generateImage(
+          {
+            imagePrompt: imagePromptWithContext,
+            prevImgUrl: prevImgBaseUrl,
+          },
+          seed
+        ).pipe(
           switchMap((base64Image) => {
             prevImgPrompt = partObj.imagePrompt;
             // Upload image to Firebase Storage

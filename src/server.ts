@@ -11,7 +11,6 @@ import {
   storyGenerationFlow,
 } from './genkit/storyGenerationFlow';
 import * as dotenv from 'dotenv';
-import path from 'path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 

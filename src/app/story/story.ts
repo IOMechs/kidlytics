@@ -12,7 +12,7 @@ import { DialogBox } from '../components/ui/dialog-box/dialog-box';
   styleUrl: './story.css',
 })
 export class Story {
-  isLoading: WritableSignal<boolean> = signal(false);
+  isLoading = signal(false);
 
   modalContent: WritableSignal<ModalContentT> = signal({
     status: 'Error',
@@ -26,10 +26,6 @@ export class Story {
     this.dialog.open(DialogBox, {
       data: this.modalContent(),
     });
-  }
-
-  toggleLoadingBar(state: boolean) {
-    this.isLoading.set(state);
   }
 
   toggleModal(currentState: StoryGenerationStatus) {

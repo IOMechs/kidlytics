@@ -21,7 +21,6 @@ import { Meta } from '@angular/platform-browser';
   selector: 'app-display-story',
   standalone: true,
   templateUrl: './display-story.html',
-  styleUrls: ['./display-story.css'],
   imports: [
     StoryCard,
     MatDialogModule,
@@ -223,10 +222,7 @@ export class DisplayStory implements OnInit {
   standalone: true,
   imports: [MatDialogModule, CommonModule],
   template: `
-    <h2
-      mat-dialog-title
-      class="text-xl font-bold text-[var(--secondary-color)]"
-    >
+    <h2 mat-dialog-title class="text-xl font-bold text-secondary">
       {{ data.title }}
     </h2>
     <mat-dialog-content>
@@ -238,13 +234,7 @@ export class DisplayStory implements OnInit {
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button
-        mat-button
-        mat-dialog-close
-        class="bg-[var(--secondary-color)] text-white px-4 py-2 rounded"
-      >
-        Close
-      </button>
+      <button mat-button mat-dialog-close class="btn btn-primary">Close</button>
     </mat-dialog-actions>
   `,
 })
