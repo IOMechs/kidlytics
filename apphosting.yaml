@@ -78,5 +78,5 @@ env:
 
 # Build and run commands
 scripts:
-  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production"
+  buildCommand: "node scripts/generate-env.js && ng build --configuration production"
   runCommand: "node dist/kidlytics/server/server.mjs"
