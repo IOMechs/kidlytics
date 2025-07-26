@@ -1,7 +1,9 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as cors from 'cors';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 admin.initializeApp();
 const db = admin.firestore();
 const corsHandler = cors({ origin: true });
