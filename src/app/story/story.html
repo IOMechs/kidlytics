@@ -1,9 +1,7 @@
-<h1 class="text-[var(--primary-color)] font-bold text-3xl py-6 text-center">
+<h1 class="text-base-content font-bold text-3xl py-6 text-center">
   Create Your Story
 </h1>
 <app-create-story
-  [loading]="isLoading()"
-  (loadingEvent)="toggleLoadingBar($event)"
-  (statusEvent)="toggleModal($event)"
+  [(loading)]="isLoading"
+  (statusChanged)="toggleModal($event)"
 ></app-create-story>
-<!-- <app-display-story></app-display-story> -->

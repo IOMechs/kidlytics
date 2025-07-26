@@ -4,7 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-consent-banner',
   imports: [],
   templateUrl: './consent-banner.html',
-  styleUrl: './consent-banner.css',
 })
 export class ConsentBanner {
   showBanner = !localStorage.getItem('analytics_consent');

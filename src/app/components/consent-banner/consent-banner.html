@@ -1,13 +1,14 @@
 @if (showBanner){
-
-<div class="consent-banner">
+<div
+  class="fixed bottom-0 left-0 w-full bg-neutral text-neutral-content p-4 flex justify-between items-center z-50"
+>
   <span>
     We use Google Analytics to improve your experience. Do you accept analytics
     cookies?
   </span>
   <div class="flex gap-2">
-    <button (click)="accept()">Accept</button>
-    <button (click)="decline()">Decline</button>
+    <button class="btn btn-sm btn-ghost" (click)="decline()">Decline</button>
+    <button class="btn btn-sm btn-primary" (click)="accept()">Accept</button>
   </div>
 </div>
 }

@@ -5,7 +5,9 @@ export const STORY_QUESTIONS = [
     isMcq: false,
     options: [], // Freeform input: Name and Age
     placeholder:
-      'e.g. Susan a 7 years old girl from Italy OR Grade 5 students living in South Asia',
+      'Example: A seven years old girl from Italy OR Grade 5 students living in South Asia',
+    hint: 'Please provide a name and age or a group description. You can also include what the story is about to be focused on.',
+    hintIcon: 'info',
   },
   {
     id: '2',
@@ -20,6 +22,7 @@ export const STORY_QUESTIONS = [
     isMcq: false,
     options: [],
     placeholder: 'e.g. English',
+    defaultValue: 'English',
   },
   {
     id: '4',

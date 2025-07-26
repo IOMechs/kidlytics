@@ -4,8 +4,5 @@ import { Component } from '@angular/core';
   selector: 'app-why-choose',
   imports: [],
   templateUrl: './why-choose.html',
-  styleUrl: './why-choose.css'
 })
-export class WhyChoose {
-
-}
+export class WhyChoose {}
