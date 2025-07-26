@@ -15,6 +15,7 @@ import { StoryLimitService } from '../../services/story-limit.service';
 import { StoryGenerationStatus } from '../../model/story.type';
 import { catchError, of } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-story',
@@ -27,6 +28,7 @@ export class CreateStory {
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
   showPasswordInput = signal(false);
   password = signal('');
+  limitReached = signal(false);
 
   //injections
   storyService = inject(GenerateStory);
@@ -51,25 +53,19 @@ export class CreateStory {
     this.answers[this.currentQuestion().question] = value;
   }
 
-  get canGenerate(): boolean {
-    return this.storyLimitService.canGenerateStory();
-  }
-
-  get generationCount(): number {
-    return this.storyLimitService.getGenerationCount();
-  }
-
-  get generationLimit(): number {
-    return this.storyLimitService.getLimit();
-  }
-
   togglePasswordInput() {
     this.showPasswordInput.set(!this.showPasswordInput());
   }
 
   submitPassword() {
-    this.storyLimitService.validatePassword(this.password());
-    this.showPasswordInput.set(false);
+    this.storyLimitService.validatePassword(this.password()).subscribe({
+      next: (res: any) => {
+        if (res.valid) {
+          this.limitReached.set(false);
+          this.showPasswordInput.set(false);
+        }
+      },
+    });
   }
 
   goToNext = () => {
@@ -87,22 +83,24 @@ export class CreateStory {
   };
 
   submitAnswers = async () => {
-    if (!this.canGenerate) {
-      return;
-    }
     this.loading.set(true);
-    this.storyLimitService.incrementGenerationCount();
 
     this.storyService
       .getStoryAndImage(this.answers)
       .pipe(
-        catchError((error) => {
+        catchError((error: HttpErrorResponse) => {
           console.error('Error occurred while generating story/image:', error);
           this.loading.set(false);
 
+          if (error.status === 429) {
+            this.limitReached.set(true);
+          }
+
           this.statusChanged.emit({
             status: 'Error',
-            message: 'Failed to generate story or image. Please try again.',
+            message:
+              error.error?.message ||
+              'Failed to generate story or image. Please try again.',
             url: '',
           });
 

@@ -48,6 +48,8 @@ const environmentFileContent = `export const environment = {
     getEnvVar("enableStoryGenerationLimit", "false") === "true"
   },
   adminPassword: '${getEnvVar("ADMIN_PASSWORD")}',
+  rateLimiterUrl: '${getEnvVar("rateLimiterUrl")}',
+  validatePasswordUrl: '${getEnvVar("validatePasswordUrl")}',
 };
 `;
 
@@ -84,4 +86,6 @@ console.log({
   enableStoryGenerationLimit:
     getEnvVar("enableStoryGenerationLimit", "false") === "true",
   adminPassword: getEnvVar("ADMIN_PASSWORD") ? "****" : "not set",
+  rateLimiterUrl: getEnvVar("rateLimiterUrl", "not set"),
+  validatePasswordUrl: getEnvVar("validatePasswordUrl", "not set"),
 });
