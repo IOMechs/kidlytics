@@ -25,6 +25,8 @@ export class CreateStory {
   //signals
   index = signal(0);
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
+  showPasswordInput = signal(false);
+  password = signal('');
 
   //injections
   storyService = inject(GenerateStory);
@@ -61,6 +63,15 @@ export class CreateStory {
     return this.storyLimitService.getLimit();
   }
 
+  togglePasswordInput() {
+    this.showPasswordInput.set(!this.showPasswordInput());
+  }
+
+  submitPassword() {
+    this.storyLimitService.validatePassword(this.password());
+    this.showPasswordInput.set(false);
+  }
+
   goToNext = () => {
     this.index.update((v) => v + 1);
     if (this.currentQuestion().defaultValue && !this.selectedAnswer) {
@@ -80,6 +91,7 @@ export class CreateStory {
       return;
     }
     this.loading.set(true);
+    this.storyLimitService.incrementGenerationCount();
 
     this.storyService
       .getStoryAndImage(this.answers)
@@ -110,8 +122,6 @@ export class CreateStory {
         });
 
         console.log(p.url);
-
-        this.storyLimitService.incrementGenerationCount();
       });
   };
 }

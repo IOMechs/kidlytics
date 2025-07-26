@@ -75,6 +75,15 @@ app.post('/api/imageGen', async (req, res) => {
   }
 });
 
+app.post('/api/validatePassword', (req, res) => {
+  const { password } = req.body;
+  if (password === process.env['ADMIN_PASSWORD']) {
+    res.json({ valid: true });
+  } else {
+    res.status(401).json({ valid: false });
+  }
+});
+
 // app.post('/api/generateStory', expressHandler(storyGenerationFlow));
 /**
  * Handle all other requests by rendering the Angular application.

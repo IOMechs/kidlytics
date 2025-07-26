@@ -4,14 +4,13 @@ kidlytics is an Angular-based web application that leverages the power of Google
 
 ## Table of Contents
 
-- [kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
+- [Kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
   - [Table of Contents](#table-of-contents)
   - [Technologies Used](#technologies-used)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Install Dependencies](#2-install-dependencies)
-    - [3. Set Up Google Cloud & Firebase](#3-set-up-google-cloud--firebase)
+    - [3. Set Up Google Cloud \& Firebase](#3-set-up-google-cloud--firebase)
     - [4. Configure Environment Variables](#4-configure-environment-variables)
     - [5. Run the Application](#5-run-the-application)
   - [Project Structure](#project-structure)
@@ -119,7 +118,8 @@ Instead of creating the environment files manually, this project uses a script t
 
     # Application Settings
     STORY_GENERATION_LIMIT=3
-    ENABLE_STORY_GENERATION_LIMIT=true
+    enableStoryGenerationLimit=true
+    ADMIN_PASSWORD="your_secret_password"
     ```
 
 3.  **Run the script** to generate the `environment.ts` and `environment.development.ts` files:
