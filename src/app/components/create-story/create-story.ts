@@ -10,6 +10,7 @@ import {
 import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
+import { StoryLimitService } from '../../services/story-limit.service';
 
 import { StoryGenerationStatus } from '../../model/story.type';
 import { catchError, of } from 'rxjs';
@@ -24,15 +25,17 @@ export class CreateStory {
   //signals
   index = signal(0);
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
+  showPasswordInput = signal(false);
+  password = signal('');
 
   //injections
   storyService = inject(GenerateStory);
+  storyLimitService = inject(StoryLimitService);
 
   //outputs
   statusChanged = output<StoryGenerationStatus>();
 
   //inputs
-
   loading = model(false);
 
   lengthOfQuestions = STORY_QUESTIONS.length;
@@ -46,6 +49,27 @@ export class CreateStory {
 
   set selectedAnswer(value: string) {
     this.answers[this.currentQuestion().question] = value;
+  }
+
+  get canGenerate(): boolean {
+    return this.storyLimitService.canGenerateStory();
+  }
+
+  get generationCount(): number {
+    return this.storyLimitService.getGenerationCount();
+  }
+
+  get generationLimit(): number {
+    return this.storyLimitService.getLimit();
+  }
+
+  togglePasswordInput() {
+    this.showPasswordInput.set(!this.showPasswordInput());
+  }
+
+  submitPassword() {
+    this.storyLimitService.validatePassword(this.password());
+    this.showPasswordInput.set(false);
   }
 
   goToNext = () => {
@@ -63,7 +87,11 @@ export class CreateStory {
   };
 
   submitAnswers = async () => {
+    if (!this.canGenerate) {
+      return;
+    }
     this.loading.set(true);
+    this.storyLimitService.incrementGenerationCount();
 
     this.storyService
       .getStoryAndImage(this.answers)
