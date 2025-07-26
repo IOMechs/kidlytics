@@ -3,7 +3,7 @@ import {
   computed,
   inject,
   signal,
-  input,
+  OnInit,
   output,
   model,
 } from '@angular/core';
@@ -13,7 +13,7 @@ import { GenerateStory } from '../../services/generate-story';
 import { StoryLimitService } from '../../services/story-limit.service';
 
 import { StoryGenerationStatus } from '../../model/story.type';
-import { catchError, of } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -22,7 +22,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   imports: [FormsModule, MatIcon],
   templateUrl: './create-story.html',
 })
-export class CreateStory {
+export class CreateStory implements OnInit {
   //signals
   index = signal(0);
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
@@ -45,6 +45,16 @@ export class CreateStory {
 
   answers: Record<string, string> = {};
 
+  ngOnInit(): void {
+    this.storyLimitService.checkLimit().subscribe({
+      next: (res) => {
+        if (!res.allowed) {
+          this.limitReached.set(true);
+        }
+      },
+    });
+  }
+
   get selectedAnswer(): string {
     return this.answers[this.currentQuestion().question] || '';
   }
@@ -59,7 +69,7 @@ export class CreateStory {
 
   submitPassword() {
     this.storyLimitService.validatePassword(this.password()).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         if (res.valid) {
           this.limitReached.set(false);
           this.showPasswordInput.set(false);
@@ -85,9 +95,17 @@ export class CreateStory {
   submitAnswers = async () => {
     this.loading.set(true);
 
-    this.storyService
-      .getStoryAndImage(this.answers)
+    this.storyLimitService
+      .checkLimit()
       .pipe(
+        switchMap((res) => {
+          if (!res.allowed) {
+            this.limitReached.set(true);
+            this.loading.set(false);
+            return of(null);
+          }
+          return this.storyService.getStoryAndImage(this.answers);
+        }),
         catchError((error: HttpErrorResponse) => {
           console.error('Error occurred while generating story/image:', error);
           this.loading.set(false);

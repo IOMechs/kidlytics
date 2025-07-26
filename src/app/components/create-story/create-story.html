@@ -71,7 +71,13 @@
         }
       </div>
     </div>
-    @if(limitReached()) {
+    @if(loading()) {
+    <div class="text-center p-4">
+      <p class="text-lg">
+        Generating story. This can take a few minutes. Please wait...
+      </p>
+    </div>
+    } @if(limitReached()) {
     <div class="text-center p-4">
       <p
         class="text-error text-sm cursor-pointer"
