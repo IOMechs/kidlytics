@@ -10,6 +10,7 @@ import {
 import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
+import { StoryLimitService } from '../../services/story-limit.service';
 
 import { StoryGenerationStatus } from '../../model/story.type';
 import { catchError, of } from 'rxjs';
@@ -27,12 +28,12 @@ export class CreateStory {
 
   //injections
   storyService = inject(GenerateStory);
+  storyLimitService = inject(StoryLimitService);
 
   //outputs
   statusChanged = output<StoryGenerationStatus>();
 
   //inputs
-
   loading = model(false);
 
   lengthOfQuestions = STORY_QUESTIONS.length;
@@ -46,6 +47,18 @@ export class CreateStory {
 
   set selectedAnswer(value: string) {
     this.answers[this.currentQuestion().question] = value;
+  }
+
+  get canGenerate(): boolean {
+    return this.storyLimitService.canGenerateStory();
+  }
+
+  get generationCount(): number {
+    return this.storyLimitService.getGenerationCount();
+  }
+
+  get generationLimit(): number {
+    return this.storyLimitService.getLimit();
   }
 
   goToNext = () => {
@@ -63,6 +76,9 @@ export class CreateStory {
   };
 
   submitAnswers = async () => {
+    if (!this.canGenerate) {
+      return;
+    }
     this.loading.set(true);
 
     this.storyService
@@ -94,6 +110,8 @@ export class CreateStory {
         });
 
         console.log(p.url);
+
+        this.storyLimitService.incrementGenerationCount();
       });
   };
 }
