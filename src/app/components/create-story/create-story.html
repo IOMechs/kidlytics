@@ -71,15 +71,30 @@
         }
       </div>
     </div>
-    @if(loading()) {
-    <p class="p-4 text-center text-lg">
-      Generating images can take some time. Please wait...
-    </p>
-    } @if(!canGenerate) {
-    <p class="text-error p-4 text-center text-lg">
-      You have reached the generation limit
-      ({{generationCount}}/{{generationLimit}})
-    </p>
+    @if(!canGenerate) {
+    <div class="text-center p-4">
+      <p
+        class="text-error text-sm cursor-pointer"
+        (click)="togglePasswordInput()"
+      >
+        You have reached the generation limit
+        ({{generationCount}}/{{generationLimit}}).
+      </p>
+      @if(showPasswordInput()) {
+      <div class="form-control mt-8 flex items-center gap-2 justify-center">
+        <input
+          type="password"
+          placeholder="Enter password"
+          class="input input-bordered w-full max-w-xs"
+          [(ngModel)]="password"
+          (keyup.enter)="submitPassword()"
+        />
+        <button class="btn btn-primary" (click)="submitPassword()">
+          Unlock
+        </button>
+      </div>
+      }
+    </div>
     }
   </div>
 </div>

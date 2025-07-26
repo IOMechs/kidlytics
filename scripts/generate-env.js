@@ -44,7 +44,10 @@ const environmentFileContent = `export const environment = {
   appId: '${getEnvVar("appId")}',
   gcpProjectId: '${getEnvVar("gcpProjectId")}',
   storyGenerationLimit: ${getEnvVar("storyGenerationLimit", 3)},
-  enableStoryGenerationLimit: ${getEnvVar('ENABLE_STORY_GENERATION_LIMIT', 'false') === 'true'},
+  enableStoryGenerationLimit: ${
+    getEnvVar("enableStoryGenerationLimit", "false") === "true"
+  },
+  adminPassword: '${getEnvVar("ADMIN_PASSWORD")}',
 };
 `;
 
@@ -78,5 +81,7 @@ console.log({
   appId: getEnvVar("appId") ? "****" : "not set",
   gcpProjectId: getEnvVar("gcpProjectId"),
   storyGenerationLimit: getEnvVar("storyGenerationLimit", 3),
-  enableStoryGenerationLimit: getEnvVar('ENABLE_STORY_GENERATION_LIMIT', 'false') === 'true',
+  enableStoryGenerationLimit:
+    getEnvVar("enableStoryGenerationLimit", "false") === "true",
+  adminPassword: getEnvVar("ADMIN_PASSWORD") ? "****" : "not set",
 });
