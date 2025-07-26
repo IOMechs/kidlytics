@@ -77,7 +77,9 @@ export class GenerateStory {
         storyName = story.title;
         userPrompt = userContext;
         ageGroup = story.ageGroup;
-        return from(story.parts.map((part, index) => ({ ...part, index })));
+        return from(
+          story.parts.slice(1).map((part, index) => ({ ...part, index }))
+        );
       }),
       concatMap((partObj) => {
         let imagePromptWithContext = `Current Scene Prompt: ${partObj.imagePrompt}

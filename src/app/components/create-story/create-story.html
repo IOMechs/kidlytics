@@ -53,7 +53,7 @@
           <button
             class="btn btn-primary w-36"
             (click)="submitAnswers()"
-            [disabled]="loading() || !canGenerate"
+            [disabled]="loading() || limitReached()"
           >
             @if(loading()) {
             <span class="loading loading-spinner"></span>
@@ -71,14 +71,13 @@
         }
       </div>
     </div>
-    @if(!canGenerate) {
+    @if(limitReached()) {
     <div class="text-center p-4">
       <p
         class="text-error text-sm cursor-pointer"
         (click)="togglePasswordInput()"
       >
-        You have reached the generation limit
-        ({{generationCount}}/{{generationLimit}}).
+        You have reached the generation limit for this device.
       </p>
       @if(showPasswordInput()) {
       <div class="form-control mt-8 flex items-center gap-2 justify-center">
