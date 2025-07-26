@@ -8,12 +8,12 @@ import {
   effect,
 } from '@angular/core';
 import { StoryPartWithImg } from '../../model/story.type';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-story-card',
-  imports: [],
+  imports: [MatTooltip],
   templateUrl: './story-card.html',
-  styleUrl: './story-card.css',
 })
 export class StoryCard {
   constructor() {

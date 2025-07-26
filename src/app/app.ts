@@ -11,7 +11,6 @@ import { registerIcons } from './app.config';
   selector: 'app-root',
   imports: [RouterOutlet, Header, Footer, ConsentBanner],
   templateUrl: './app.html',
-  styleUrl: './app.css',
 })
 export class App {
   protected title = 'kidlytics';

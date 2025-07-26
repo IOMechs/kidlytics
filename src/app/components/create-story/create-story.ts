@@ -5,6 +5,7 @@ import {
   signal,
   input,
   output,
+  model,
 } from '@angular/core';
 import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
@@ -12,12 +13,12 @@ import { GenerateStory } from '../../services/generate-story';
 
 import { StoryGenerationStatus } from '../../model/story.type';
 import { catchError, of } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-create-story',
-  imports: [FormsModule],
+  imports: [FormsModule, MatIcon],
   templateUrl: './create-story.html',
-  styleUrl: './create-story.css',
 })
 export class CreateStory {
   //signals
@@ -28,12 +29,11 @@ export class CreateStory {
   storyService = inject(GenerateStory);
 
   //outputs
-  loadingEvent = output<boolean>();
-  statusEvent = output<StoryGenerationStatus>();
+  statusChanged = output<StoryGenerationStatus>();
 
   //inputs
 
-  loading = input(false);
+  loading = model(false);
 
   lengthOfQuestions = STORY_QUESTIONS.length;
   isMcq = this.currentQuestion().isMcq;
@@ -48,29 +48,31 @@ export class CreateStory {
     this.answers[this.currentQuestion().question] = value;
   }
 
-  emitLoadingEvent = (state: boolean) => {
-    this.loadingEvent.emit(state);
-  };
-
   goToNext = () => {
     this.index.update((v) => v + 1);
+    if (this.currentQuestion().defaultValue && !this.selectedAnswer) {
+      this.selectedAnswer = this.currentQuestion().defaultValue || '';
+    }
   };
 
   goToPrev = () => {
     this.index.update((v) => v - 1);
+    if (this.currentQuestion().defaultValue && !this.selectedAnswer) {
+      this.selectedAnswer = this.currentQuestion().defaultValue || '';
+    }
   };
 
   submitAnswers = async () => {
-    this.emitLoadingEvent(true);
+    this.loading.set(true);
 
     this.storyService
       .getStoryAndImage(this.answers)
       .pipe(
         catchError((error) => {
           console.error('Error occurred while generating story/image:', error);
-          this.emitLoadingEvent(false);
+          this.loading.set(false);
 
-          this.statusEvent.emit({
+          this.statusChanged.emit({
             status: 'Error',
             message: 'Failed to generate story or image. Please try again.',
             url: '',
@@ -83,9 +85,9 @@ export class CreateStory {
       .subscribe((p) => {
         if (!p) return; // already handled in catchError
 
-        this.emitLoadingEvent(false);
+        this.loading.set(false);
 
-        this.statusEvent.emit({
+        this.statusChanged.emit({
           status: p.status,
           message: p.message,
           url: p.url,

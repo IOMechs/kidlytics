@@ -18,7 +18,6 @@ import { MatButtonModule } from '@angular/material/button';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dialog-box.html',
-  styleUrl: './dialog-box.css',
 })
 export class DialogBox {
   data = inject(MAT_DIALOG_DATA);
