@@ -11,7 +11,9 @@ const corsHandler = cors({ origin: true });
 export const rateLimiter = functions.https.onRequest(async (req, res) => {
   corsHandler(req, res, async () => {
     if (process.env.ENABLE_STORY_GENERATION_LIMIT !== 'true') {
-      res.status(200).send({ allowed: true, message: 'Rate limiting is disabled.' });
+      res
+        .status(200)
+        .send({ allowed: true, message: 'Rate limiting is disabled.' });
       return;
     }
 
@@ -20,14 +22,14 @@ export const rateLimiter = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    const { ip } = req.body;
-    if (!ip) {
-      res.status(400).send({ error: 'IP address is required.' });
+    const { identifier } = req.body;
+    if (!identifier) {
+      res.status(400).send({ error: 'Identifier is required.' });
       return;
     }
 
     const limit = parseInt(process.env.STORY_GENERATION_LIMIT || '3', 10);
-    const docRef = db.collection('ip-rate-limits').doc(ip);
+    const docRef = db.collection('rate-limits').doc(identifier);
 
     try {
       const doc = await docRef.get();
@@ -65,16 +67,16 @@ export const validatePasswordAndOverride = functions.https.onRequest(
         return;
       }
 
-      const { ip, password } = req.body;
-      if (!ip || !password) {
+      const { identifier, password } = req.body;
+      if (!identifier || !password) {
         res
           .status(400)
-          .send({ error: 'IP address and password are required.' });
+          .send({ error: 'Identifier and password are required.' });
         return;
       }
 
       if (password === process.env.ADMIN_PASSWORD) {
-        const docRef = db.collection('ip-rate-limits').doc(ip);
+        const docRef = db.collection('rate-limits').doc(identifier);
         await docRef.set({ unlimited: true }, { merge: true });
         res.status(200).send({ valid: true });
       } else {
