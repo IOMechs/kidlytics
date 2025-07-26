@@ -76,6 +76,12 @@ env:
   - variable: storyGenerationLimit
     secret: projects/95440248217/secrets/storyGenerationLimit/versions/1
 
+  - variable: validatePasswordUrl
+    secret: projects/95440248217/secrets/validatePasswordUrl/versions/1
+
+  - variable: rateLimiterUrl
+    secret: projects/95440248217/secrets/rateLimiterUrl/versions/1
+
 # Build and run commands
 scripts:
   buildCommand: "node scripts/generate-env.js && ng build --configuration production"
