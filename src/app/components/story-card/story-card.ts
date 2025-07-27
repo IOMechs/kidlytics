@@ -1,9 +1,8 @@
 import {
   Component,
-  EventEmitter,
+  HostListener,
   input,
   output,
-  Output,
   signal,
   effect,
 } from '@angular/core';
@@ -42,6 +41,26 @@ export class StoryCard {
 
   onImageLoad(): void {
     this.imageLoaded.set(true);
+  }
+
+  @HostListener('window:keydown.arrowright')
+  handleKeyRight() {
+    this.nextCard();
+  }
+
+  @HostListener('swipeleft')
+  handleSwipeLeft() {
+    this.nextCard();
+  }
+
+  @HostListener('window:keydown.arrowleft')
+  handleKeyLeft() {
+    this.prevCard();
+  }
+
+  @HostListener('swiperight')
+  handleSwipeRight() {
+    this.prevCard();
   }
 
   prevCard(): void {

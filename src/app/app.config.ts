@@ -6,9 +6,10 @@ import {
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import {
+  DomSanitizer,
+  HammerModule,
   provideClientHydration,
   withEventReplay,
-  DomSanitizer,
 } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
@@ -22,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    importProvidersFrom(MatDialogModule, MatIconModule),
+    importProvidersFrom(MatDialogModule, MatIconModule, HammerModule),
   ],
 };
 
