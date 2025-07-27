@@ -3,9 +3,9 @@ import {
   computed,
   inject,
   signal,
-  OnInit,
   output,
   model,
+  afterNextRender,
 } from '@angular/core';
 import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +22,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   imports: [FormsModule, MatIcon],
   templateUrl: './create-story.html',
 })
-export class CreateStory implements OnInit {
+export class CreateStory {
   //signals
   index = signal(0);
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
@@ -45,13 +45,21 @@ export class CreateStory implements OnInit {
 
   answers: Record<string, string> = {};
 
-  ngOnInit(): void {
-    this.storyLimitService.checkLimit().subscribe({
-      next: (res) => {
-        if (!res.allowed) {
-          this.limitReached.set(true);
-        }
-      },
+  constructor() {
+    afterNextRender(() => {
+      this.storyLimitService.checkLimit().subscribe({
+        next: (res) => {
+          if (!res.allowed) {
+            this.limitReached.set(true);
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error checking limit:', error);
+          if (error.status === 429) {
+            this.limitReached.set(true);
+          }
+        },
+      });
     });
   }
 

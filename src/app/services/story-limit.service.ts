@@ -13,7 +13,7 @@ export class StoryLimitService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
-  private getIdentifier(): string | null {
+  getIdentifier(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       let identifier = localStorage.getItem(IDENTIFIER_KEY);
       if (!identifier) {
