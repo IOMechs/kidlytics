@@ -20,7 +20,7 @@ dotenv.config({ path: '.env.local' });
 app.set('trust proxy', 1); // Trust the first proxy
 const angularApp = new AngularNodeAppEngine();
 
-const ipRateLimiter = async (
+const rateLimiter = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -31,7 +31,7 @@ const ipRateLimiter = async (
 
   try {
     const response = await axios.post(process.env['rateLimiterUrl']!, {
-      ip: req.ip,
+      identifier: req.body.identifier,
     });
     if (response.data.allowed) {
       next();
@@ -64,7 +64,7 @@ app.use(
 app.post(
   '/api/generateStory',
   express.json(),
-  ipRateLimiter,
+  rateLimiter,
   async (req: Request, res: Response) => {
     try {
       const result = await storyGenerationFlow(req.body);
@@ -97,12 +97,32 @@ app.post(
 );
 
 app.post(
+  '/api/rateLimiter',
+  express.json(),
+  async (req: Request, res: Response) => {
+    try {
+      const response = await axios.post(process.env['rateLimiterUrl']!, {
+        identifier: req.body.identifier,
+      });
+      res.status(response.status).json(response.data);
+    } catch (error: any) {
+      console.error('Error calling rate limiter function:', error);
+      const status = error.response?.status || 500;
+      const data = error.response?.data || {
+        message: 'Internal server error.',
+      };
+      res.status(status).json(data);
+    }
+  }
+);
+
+app.post(
   '/api/validatePassword',
   express.json(),
   async (req: Request, res: Response) => {
     try {
       const response = await axios.post(process.env['validatePasswordUrl']!, {
-        ip: req.ip,
+        identifier: req.body.identifier,
         password: req.body.password,
       });
       res.status(response.status).json(response.data);
