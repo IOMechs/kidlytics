@@ -32,6 +32,7 @@ const rateLimiter = async (
   try {
     const response = await axios.post(process.env['rateLimiterUrl']!, {
       identifier: req.body.identifier,
+      checkOnly: false, // This is a real request, so we increment
     });
     if (response.data.allowed) {
       next();
@@ -103,6 +104,7 @@ app.post(
     try {
       const response = await axios.post(process.env['rateLimiterUrl']!, {
         identifier: req.body.identifier,
+        checkOnly: true, // This is just a check, so don't increment
       });
       res.status(response.status).json(response.data);
     } catch (error: any) {

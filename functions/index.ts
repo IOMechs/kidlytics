@@ -22,7 +22,7 @@ export const rateLimiter = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    const { identifier } = req.body;
+    const { identifier, checkOnly } = req.body;
     if (!identifier) {
       res.status(400).send({ error: 'Identifier is required.' });
       return;
@@ -43,6 +43,11 @@ export const rateLimiter = functions.https.onRequest(async (req, res) => {
           res.status(429).send({ allowed: false, message: 'Limit reached.' });
           return;
         }
+      }
+
+      if (checkOnly) {
+        res.status(200).send({ allowed: true });
+        return;
       }
 
       // Increment and allow
