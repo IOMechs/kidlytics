@@ -23,6 +23,7 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-server": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "@angular/service-worker": "^20.0.0",
     "@angular/ssr": "^20.0.3",
     "@genkit-ai/express": "^1.13.0",
     "@genkit-ai/googleai": "^1.13.0",
