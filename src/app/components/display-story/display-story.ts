@@ -23,6 +23,7 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
+import { TextToSpeech } from '../../services/text-to-speech';
 
 @Component({
   selector: 'app-display-story',
@@ -52,6 +53,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   imagesLoaded = signal<boolean[]>([]);
   preloadedImages = signal<(HTMLImageElement | null)[]>([]);
   isPrinting = signal(false);
+  speakingSignal = signal(false);
 
   // For modal content
   modalContent = signal<{
@@ -63,6 +65,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   });
 
   readonly dialog = inject(MatDialog);
+  private tts = inject(TextToSpeech);
 
   constructor(private route: ActivatedRoute, private meta: Meta) {}
 
@@ -232,6 +235,13 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
+    // start reading the next part after one second
+    if (this.speakingSignal()) {
+      setTimeout(
+        () => this.tts.speak(this.storyParts()[newIndex].content),
+        1000
+      );
+    }
   }
 
   getShareUrl(): string {
@@ -248,6 +258,16 @@ export class DisplayStory implements OnInit, OnDestroy {
     setTimeout(() => {
       window.print();
     }, 100);
+  }
+
+  handleSpeech(shouldSpeak: boolean) {
+    console.log(shouldSpeak);
+    this.speakingSignal.set(shouldSpeak);
+    if (shouldSpeak) {
+      this.tts.speak(this.storyParts()[this.currentIndex()].content);
+    } else {
+      this.tts.stop();
+    }
   }
 }
 
