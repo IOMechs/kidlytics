@@ -67,7 +67,22 @@ env:
   - variable: apiKey
     secret: projects/95440248217/secrets/apiKey/versions/3
 
+  - variable: ADMIN_PASSWORD
+    secret: projects/95440248217/secrets/ADMIN_PASSWORD/versions/1
+
+  - variable: enableStoryGenerationLimit
+    secret: projects/95440248217/secrets/enableStoryGenerationLimit/versions/1
+
+  - variable: storyGenerationLimit
+    secret: projects/95440248217/secrets/storyGenerationLimit/versions/1
+
+  - variable: validatePasswordUrl
+    secret: projects/95440248217/secrets/validatePasswordUrl/versions/1
+
+  - variable: rateLimiterUrl
+    secret: projects/95440248217/secrets/rateLimiterUrl/versions/1
+
 # Build and run commands
 scripts:
-  buildCommand: "node src/scripts/generate-env.js && ng build --configuration production"
+  buildCommand: "node scripts/generate-env.js && ng build --configuration production"
   runCommand: "node dist/kidlytics/server/server.mjs"

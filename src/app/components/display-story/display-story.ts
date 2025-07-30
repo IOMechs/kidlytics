@@ -9,7 +9,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, inject, Inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  inject,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
 import {
   MatDialog,
   MatDialogModule,
@@ -21,6 +28,7 @@ import { Meta } from '@angular/platform-browser';
   selector: 'app-display-story',
   standalone: true,
   templateUrl: './display-story.html',
+  styleUrl: './display-story.css',
   imports: [
     StoryCard,
     MatDialogModule,
@@ -32,7 +40,7 @@ import { Meta } from '@angular/platform-browser';
     SocialShare,
   ],
 })
-export class DisplayStory implements OnInit {
+export class DisplayStory implements OnInit, OnDestroy {
   // Signals for state
   storyParts = signal<StoryPartWithImg[]>([]);
   storyTitle = signal<string>('');
@@ -43,6 +51,7 @@ export class DisplayStory implements OnInit {
   error = signal<string | null>(null);
   imagesLoaded = signal<boolean[]>([]);
   preloadedImages = signal<(HTMLImageElement | null)[]>([]);
+  isPrinting = signal(false);
 
   // For modal content
   modalContent = signal<{
@@ -58,7 +67,9 @@ export class DisplayStory implements OnInit {
   constructor(private route: ActivatedRoute, private meta: Meta) {}
 
   ngOnInit(): void {
-    console.log('initing');
+    window.addEventListener('beforeprint', this.beforePrint);
+    window.addEventListener('afterprint', this.afterPrint);
+
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -72,12 +83,10 @@ export class DisplayStory implements OnInit {
 
         const storySnap = await getDoc(doc(db, 'stories', id));
 
-        console.log('data fetched');
         if (!storySnap.exists()) {
           this.error.set('No story found with this ID.');
         } else {
           const data = storySnap.data();
-          console.log(data);
           this.storyParts.set(data['storyParts']);
           this.storyTitle.set(data['name']);
           this.userPrompt.set({
@@ -147,6 +156,19 @@ export class DisplayStory implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    window.removeEventListener('beforeprint', this.beforePrint);
+    window.removeEventListener('afterprint', this.afterPrint);
+  }
+
+  private beforePrint = () => {
+    this.isPrinting.set(true);
+  };
+
+  private afterPrint = () => {
+    this.isPrinting.set(false);
+  };
+
   formatDate(timestamp: any): string {
     const milliseconds =
       timestamp.seconds * 1000 + timestamp.nanoseconds / 1_000_000;
@@ -214,6 +236,18 @@ export class DisplayStory implements OnInit {
 
   getShareUrl(): string {
     return window.location.href;
+  }
+
+  print(): void {
+    // Manually trigger the printing state to ensure the print view is rendered
+    this.isPrinting.set(true);
+
+    // Use a timeout to allow Angular to render the print view before the print dialog opens.
+    // This helps prevent race conditions. The `afterprint` event will handle
+    // setting `isPrinting` back to false.
+    setTimeout(() => {
+      window.print();
+    }, 100);
   }
 }
 

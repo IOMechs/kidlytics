@@ -6,25 +6,18 @@ import {
   StoryPartWithImg,
   Story,
 } from '../model/story.type';
-import {
-  catchError,
-  concatMap,
-  from,
-  map,
-  Observable,
-  of,
-  switchMap,
-  toArray,
-} from 'rxjs';
+import { concatMap, from, map, Observable, of, switchMap, toArray } from 'rxjs';
 import { addDoc, collection } from 'firebase/firestore';
 import { db, storage } from '../../../firebase'; // make sure Firebase is initialized
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import { StoryLimitService } from './story-limit.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GenerateStory {
   http = inject(HttpClient);
+  storyLimitService = inject(StoryLimitService);
 
   url = environment.apiUrl;
 
@@ -33,8 +26,10 @@ export class GenerateStory {
     for (const [key, value] of Object.entries(userContext)) {
       usersPreference += `${key} : ${value} \n`;
     }
+    const identifier = this.storyLimitService.getIdentifier();
     return this.http.post<Story>(this.url + '/api/generateStory', {
       userContext: usersPreference,
+      identifier,
     });
   }
 

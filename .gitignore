@@ -48,3 +48,6 @@ Thumbs.db
 
 #Genkit
 /.genkit
+
+node_modules
+functions/dist/

@@ -4,16 +4,20 @@ kidlytics is an Angular-based web application that leverages the power of Google
 
 ## Table of Contents
 
-- [kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
+- [Kidlytics: AI-Powered Story Generator for Kids](#kidlytics-ai-powered-story-generator-for-kids)
   - [Table of Contents](#table-of-contents)
   - [Technologies Used](#technologies-used)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [1. Clone the Repository](#1-clone-the-repository)
     - [2. Install Dependencies](#2-install-dependencies)
-    - [3. Set Up Google Cloud & Firebase](#3-set-up-google-cloud--firebase)
+    - [3. Set Up Google Cloud \& Firebase](#3-set-up-google-cloud--firebase)
     - [4. Configure Environment Variables](#4-configure-environment-variables)
-    - [5. Run the Application](#5-run-the-application)
+      - [4.1. Angular Application (Root)](#41-angular-application-root)
+      - [4.2. Firebase Functions (`/functions`)](#42-firebase-functions-functions)
+    - [5. Deploy Firebase Functions](#5-deploy-firebase-functions)
+    - [6. Run the Application](#6-run-the-application)
+  - [Firebase Functions](#firebase-functions)
   - [Project Structure](#project-structure)
   - [How It Works](#how-it-works)
   - [Contributing](#contributing)
@@ -32,6 +36,7 @@ kidlytics is an Angular-based web application that leverages the power of Google
   - [**Google Cloud Vertex AI**](https://cloud.google.com/vertex-ai): The core platform for hosting and running generative AI models (like Gemini for text and Imagen for images).
   - [**Genkit**](https://firebase.google.com/docs/genkit): An open-source framework from Google for building, deploying, and monitoring AI-powered applications.
   - [**Firebase Firestore**](https://firebase.google.com/docs/firestore): A NoSQL database for storing the generated stories.
+  - [**Firebase Functions**](https://firebase.google.com/docs/functions): For serverless backend logic, such as rate limiting.
 
 - **Development & Authentication:**
   - [Angular CLI](https://angular.io/cli): For managing the Angular project.
@@ -46,6 +51,7 @@ Follow these steps to get a local copy of the project up and running on your mac
 
 - [Node.js](https://nodejs.org/en/download/) (v20.x or higher)
 - [Angular CLI](https://angular.io/cli)
+- [Firebase CLI](https://firebase.google.com/docs/cli#install)
 - A [Google Cloud](https://cloud.google.com/) account with an active billing account.
 - The [Google Cloud SDK (`gcloud` CLI)](https://cloud.google.com/sdk/docs/install) installed and configured on your machine.
 
@@ -57,15 +63,18 @@ cd kidlytics```
 
 ### 2. Install Dependencies
 
-Install the necessary npm packages for the project:
+Install the necessary npm packages for both the root project and the functions directory:
 
 ```bash
 npm install
+cd functions
+npm install
+cd ..
 ````
 
 ### 3. Set Up Google Cloud & Firebase
 
-This project uses Google Cloud for AI services and Firebase for the database.
+This project uses Google Cloud for AI services and Firebase for the database and serverless functions.
 
 1.  **Create a Google Cloud Project:**
 
@@ -99,41 +108,84 @@ This project uses Google Cloud for AI services and Firebase for the database.
 
 ### 4. Configure Environment Variables
 
-Create a new file in the `src/environments/` directory named `environment.ts`. This file will hold your non-secret Firebase configuration.
+This project requires two separate `.env` files: one for the Angular application and one for the Firebase Functions.
 
-**`src/environments/environment.ts`**:
+#### 4.1. Angular Application (Root)
 
-```typescript
-export const environment = {
-  production: false,
-  // Paste the firebaseConfig object from the Firebase console here
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-  projectId: "YOUR_FIREBASE_PROJECT_ID", // Should match your GCP Project ID
-  storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "YOUR_FIREBASE_APP_ID",
-  apiUrl: "",
-  FRONTEND_BASE_URL: "",
-  gcpProjectId: "",
-};
+The Angular app uses a script to generate its environment files from a `.env` file in the root of the project.
+
+1.  **Create a `.env` file** in the root of the project.
+
+2.  **Add your configuration keys** to the `.env` file. This file should include your Firebase project details and your Google Cloud Project ID.
+
+    ```env
+    # Firebase Configuration
+    API_KEY="YOUR_FIREBASE_API_KEY"
+    AUTH_DOMAIN="YOUR_FIREBASE_AUTH_DOMAIN"
+    PROJECT_ID="YOUR_FIREBASE_PROJECT_ID"
+    STORAGE_BUCKET="YOUR_FIREBASE_STORAGE_BUCKET"
+    MESSAGING_SENDER_ID="YOUR_FIREBASE_MESSAGING_SENDER_ID"
+    APP_ID="YOUR_FIREBASE_APP_ID"
+
+    # Google Cloud Configuration
+    GCP_PROJECT_ID="YOUR_GCP_PROJECT_ID" # Should be the same as PROJECT_ID
+
+    # Application Settings
+    STORY_GENERATION_LIMIT=3
+    enableStoryGenerationLimit=true
+    ADMIN_PASSWORD="your_secret_password"
+    ```
+
+3.  **Run the script** to generate the `environment.ts` and `environment.development.ts` files:
+    ```bash
+    npm run generate:env
+    ```
+This command will read your `.env` file and create the necessary configuration for the Angular application.
+
+#### 4.2. Firebase Functions (`/functions`)
+
+The `functions` directory contains serverless functions that require their own environment variables.
+
+1.  **Navigate to the `functions` directory**.
+2.  **Create a `.env` file** inside the `functions` directory.
+3.  **Add the application settings** to this `functions/.env` file. You can copy them from the root `.env` file.
+    ```env
+    # Application Settings
+    STORY_GENERATION_LIMIT=3
+    enableStoryGenerationLimit=true
+    ADMIN_PASSWORD="your_secret_password"
+    ```
+
+### 5. Deploy Firebase Functions
+
+Before running the application, you need to deploy the Firebase Functions.
+
+```bash
+# Make sure you are in the root directory of the project
+firebase deploy --only functions
 ```
 
-You do not need to add any Vertex AI or Gemini API keys here. Genkit will automatically use the credentials you set up with the `gcloud` CLI.
+For a production environment, it is recommended to set the environment variables directly in the Google Cloud console instead of using a `.env` file.
 
-### 5. Run the Application
+### 6. Run the Application
 
-Now you can start the Angular development server and the backend Express server.
+Now you can start the Angular development server.
 
 ```bash
 # In one terminal, run the Angular dev server
 ng serve
-
-# The Express server (defined in src/server.ts) will run as part of the Angular SSR setup
-# and will be available on http://localhost:4000 (by default)
 ```
 
-Open your browser and navigate to `http://localhost:4200/`. The app should be running and fully capable of communicating with your backend services.
+Open your browser and navigate to `http://localhost:4200/`.
+
+## Firebase Functions
+
+This project uses two Firebase Functions located in the `functions` directory:
+
+- **`rateLimiter`**: This function tracks the number of stories generated by a user (based on their IP address) to enforce the generation limit.
+- **`validatePasswordAndOverride`**: This function allows a user with the correct admin password to bypass the rate limit.
+
+These functions are called by the Angular application to control access to the story generation feature.
 
 ## Project Structure
 
@@ -152,6 +204,10 @@ Here is an overview of the key files and directories in the project:
 │   ├── environments/       # Environment configuration files
 │   ├── server.ts           # Express server for handling API requests and Genkit flows
 │   └── ...
+├── functions/              # Firebase Functions for rate limiting
+│   ├── index.ts
+│   ├── package.json
+│   └── .env                # (You need to create this)
 ├── angular.json            # Angular project configuration
 ├── package.json            # Project dependencies and scripts
 └── ...
@@ -160,12 +216,13 @@ Here is an overview of the key files and directories in the project:
 ## How It Works
 
 1.  **User Input**: The user answers a series of questions within the Angular app.
-2.  **API Call**: The frontend sends these answers to the backend Express server.
-3.  **Genkit Orchestration**: The server triggers a Genkit flow (`storyGenerationFlow`).
-4.  **AI Story Generation**: This flow makes a call to a **Gemini model hosted on Vertex AI** to generate the story text and prompts for illustrations.
-5.  **AI Image Generation**: For each story part, another Genkit flow calls an **image generation model (e.g., Imagen) on Vertex AI** to create a picture.
-6.  **Storing the Story**: The complete story, including the text and image data, is saved to Firebase Firestore.
-7.  **Displaying the Story**: The user is given a link to a page where they can view the newly generated story with its illustrations.
+2.  **Rate Limiting**: Before generating a story, the app calls the `rateLimiter` Firebase Function to check if the user has reached their limit.
+3.  **API Call**: If allowed, the frontend sends the answers to the backend Express server.
+4.  **Genkit Orchestration**: The server triggers a Genkit flow (`storyGenerationFlow`).
+5.  **AI Story Generation**: This flow makes a call to a **Gemini model hosted on Vertex AI** to generate the story text and prompts for illustrations.
+6.  **AI Image Generation**: For each story part, another Genkit flow calls an **image generation model (e.g., Imagen) on Vertex AI** to create a picture.
+7.  **Storing the Story**: The complete story, including the text and image data, is saved to Firebase Firestore.
+8.  **Displaying the Story**: The user is given a link to a page where they can view the newly generated story with its illustrations.
 
 ## Contributing
 
