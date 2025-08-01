@@ -14,10 +14,12 @@ import { join } from 'node:path';
 import {
   imageGenerationFlow,
   storyGenerationFlow,
+  blueprintGenerationFlow,
 } from './genkit/storyGenerationFlow';
 import * as dotenv from 'dotenv';
 import axios from 'axios';
 import { EdgeTTS, SynthesisResult } from '@duyquangnvx/edge-tts';
+import { ERROR_CODES } from './constants/error.codes';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -25,6 +27,32 @@ const app = express();
 dotenv.config({ path: '.env.local' });
 app.set('trust proxy', 1); // Trust the first proxy
 const angularApp = new AngularNodeAppEngine();
+
+const sendError = (
+  res: Response,
+  errorType: keyof typeof ERROR_CODES,
+  underlyingError?: any
+) => {
+  const error = ERROR_CODES[errorType];
+  console.error(
+    `Responding with error ${error.code}: ${error.message}`,
+    underlyingError || ''
+  );
+
+  let httpStatus = 500; // Default to Internal Server Error
+  if (error.code === ERROR_CODES.IMAGE_SAFETY_BLOCK.code) httpStatus = 400;
+  if (error.code === ERROR_CODES.RATE_LIMIT_EXCEEDED.code) httpStatus = 429;
+  if (error.code === ERROR_CODES.BLUEPRINT_GENERATION_FAILED.code)
+    httpStatus = 400;
+
+  res.status(httpStatus).json({
+    error: {
+      code: error.code,
+      message: error.message,
+    },
+  });
+};
+
 
 const rateLimiter = async (req: Request, res: Response, next: NextFunction) => {
   if (process.env['enableStoryGenerationLimit'] !== 'true') {
@@ -73,8 +101,20 @@ app.post(
       const result = await storyGenerationFlow(req.body);
       res.json(result);
     } catch (err) {
-      console.error('Flow error:', err);
-      res.status(500).json({ error: `Failed to generate story ${err}` });
+      sendError(res, 'STORY_GENERATION_FAILED', err);
+    }
+  }
+);
+
+app.post(
+  '/api/generateBlueprint',
+  express.json(),
+  async (req: Request, res: Response) => {
+    try {
+      const result = await blueprintGenerationFlow(req.body);
+      res.json(result);
+    } catch (err) {
+      sendError(res, 'BLUEPRINT_GENERATION_FAILED', err);
     }
   }
 );
@@ -90,11 +130,16 @@ app.post(
         imagePrompt,
         seed,
       });
-      if (!imageUri) throw new Error('Error while generating image');
+      if (!imageUri) {
+        return sendError(res, 'IMAGE_URI_MISSING');
+      }
       res.json({ imageUri });
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: `Error while generating image ${error}` });
+      const errorMessage = error instanceof Error ? error.message : '';
+      if (errorMessage.toLowerCase().includes('safety')) {
+        return sendError(res, 'IMAGE_SAFETY_BLOCK', error);
+      }
+      return sendError(res, 'IMAGE_GENERATION_FAILED', error);
     }
   }
 );

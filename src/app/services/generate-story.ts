@@ -33,6 +33,15 @@ export class GenerateStory {
     });
   }
 
+  getStoryBlueprint(userContext: string) {
+    return this.http.post<Record<string, string>>(
+      this.url + '/api/generateBlueprint',
+      {
+        userContext,
+      }
+    );
+  }
+
   generateImage(
     {
       imagePrompt,
