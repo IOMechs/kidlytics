@@ -22,13 +22,13 @@
     </figure>
     <audio #myAudio [src]="audioPart()" preload="auto" (ended)="stop()"></audio>
 
-    <div class="flex justify-center mt-4 gap-4">
+    <div class="flex justify-center mt-4 gap-2">
       @if(shouldSpeak() ){
-      <p>Speaking...</p>
+      <p>Pause</p>
       <button (click)="pauseAudio()"><mat-icon>volume_off</mat-icon></button>
 
       }@else{
-      <p>Speak</p>
+      <p>Play</p>
       <button (click)="playAudio()">
         <mat-icon>volume_up</mat-icon>
       </button>
