@@ -54,6 +54,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   preloadedImages = signal<(HTMLImageElement | null)[]>([]);
   isPrinting = signal(false);
   speakingSignal = signal(false);
+  storyAudio = signal<string[]>([]);
 
   // For modal content
   modalContent = signal<{
@@ -149,6 +150,17 @@ export class DisplayStory implements OnInit, OnDestroy {
               content: data['storyParts'][0].imageUri || '',
             },
           ]);
+
+          this.tts
+            .getAudioFromText(this.storyParts().map((v) => v.content))
+            .subscribe((audioBase64) => {
+              console.log(audioBase64.data);
+              let audioArr: string[] = [];
+              audioBase64.data.map((v) => {
+                audioArr.push(v.base64);
+              });
+              this.storyAudio.set(audioArr);
+            });
         }
       } catch (err) {
         console.error(err);
@@ -162,6 +174,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('beforeprint', this.beforePrint);
     window.removeEventListener('afterprint', this.afterPrint);
+    this.speakingSignal.set(false);
   }
 
   private beforePrint = () => {
@@ -236,12 +249,6 @@ export class DisplayStory implements OnInit, OnDestroy {
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
     // start reading the next part after one second
-    if (this.speakingSignal()) {
-      setTimeout(
-        () => this.tts.speak(this.storyParts()[newIndex].content),
-        1000
-      );
-    }
   }
 
   getShareUrl(): string {
@@ -261,13 +268,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   handleSpeech(shouldSpeak: boolean) {
-    console.log(shouldSpeak);
     this.speakingSignal.set(shouldSpeak);
-    if (shouldSpeak) {
-      this.tts.speak(this.storyParts()[this.currentIndex()].content);
-    } else {
-      this.tts.stop();
-    }
   }
 }
 

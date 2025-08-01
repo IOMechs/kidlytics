@@ -31,19 +31,19 @@ export class TextToSpeech {
   }
 
   async speak(text: string) {
-    this.stop();
-    if (!this.synth) {
-      alert('Text To Speech is not supported by this browser');
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'urdu';
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    this.synth.speak(utterance);
-    utterance.onend = () => {
-      this.synth.cancel();
-    };
+    // this.stop();
+    // if (!this.synth) {
+    //   alert('Text To Speech is not supported by this browser');
+    //   return;
+    // }
+    // const utterance = new SpeechSynthesisUtterance(text);
+    // utterance.lang = 'urdu';
+    // utterance.rate = 1;
+    // utterance.pitch = 1;
+    // this.synth.speak(utterance);
+    // utterance.onend = () => {
+    //   this.synth.cancel();
+    // };
   }
 
   stop() {

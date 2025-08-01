@@ -160,13 +160,11 @@ app.post(
 
       const results = await Promise.all(
         content.map(async (text: string, index: number) => {
-          console.log(text);
           const result: SynthesisResult = await tts.synthesize(text, voice, {
             rate: -10,
             volume: 0,
             pitch: 10,
           });
-          await result.toFile(`output_audio${Math.random()}`); // Save audio to file
           const base64Audio = result.toBase64(); // base64 string of mp3
           return {
             index,
