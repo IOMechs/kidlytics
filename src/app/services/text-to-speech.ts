@@ -17,8 +17,6 @@ export interface TTSApiResponse {
   providedIn: 'root',
 })
 export class TextToSpeech {
-  private synth = window.speechSynthesis;
-
   private readonly API_URL = `${environment.apiUrl}/api/text-to-speech`;
 
   constructor(private http: HttpClient) {}
@@ -28,32 +26,5 @@ export class TextToSpeech {
    */
   getAudioFromText(content: string[]) {
     return this.http.post<TTSApiResponse>(this.API_URL, { content });
-  }
-
-  async speak(text: string) {
-    // this.stop();
-    // if (!this.synth) {
-    //   alert('Text To Speech is not supported by this browser');
-    //   return;
-    // }
-    // const utterance = new SpeechSynthesisUtterance(text);
-    // utterance.lang = 'urdu';
-    // utterance.rate = 1;
-    // utterance.pitch = 1;
-    // this.synth.speak(utterance);
-    // utterance.onend = () => {
-    //   this.synth.cancel();
-    // };
-  }
-
-  stop() {
-    this.synth.cancel();
-  }
-
-  isSpeaking(signal?: boolean): boolean {
-    if (signal !== undefined) {
-      return signal;
-    }
-    return this.synth.speaking;
   }
 }

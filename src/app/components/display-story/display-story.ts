@@ -248,7 +248,6 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
-    // start reading the next part after one second
   }
 
   getShareUrl(): string {

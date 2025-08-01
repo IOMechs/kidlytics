@@ -32,8 +32,6 @@ export class StoryCard {
     });
   }
 
-  private tts = inject(TextToSpeech);
-
   imageLoaded = signal(false);
 
   isLoading = input<boolean>();
@@ -82,7 +80,7 @@ export class StoryCard {
       if (this.shouldSpeak()) {
         setTimeout(() => this.playAudio(), 200);
       }
-      // this.tts.stop();
+
       this.changeIndex.emit(this.currentIndex() - 1);
     }
   }
@@ -92,7 +90,7 @@ export class StoryCard {
       if (this.shouldSpeak()) {
         setTimeout(() => this.playAudio(), 200);
       }
-      // this.tts.stop();
+
       this.changeIndex.emit(this.currentIndex() + 1);
       this.imageLoaded.set(false);
     }
@@ -109,11 +107,6 @@ export class StoryCard {
     this.toggleSpeaking.emit(false);
     this.audioRef.nativeElement.pause();
   }
-
-  //speak and stop emit events to call speech api from parent so that the speaking state stays persistent across story parts.
-  //  This enables the app to automatically start reading next part when card is switched and speech is on
-
-  speak(): void {}
 
   stop(): void {
     this.toggleSpeaking.emit(false);
