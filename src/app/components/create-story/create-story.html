@@ -63,80 +63,85 @@
       <h2 class="card-title text-base-content text-xl">
         {{ currentQuestion().question }}
       </h2>
-
-      @if (currentQuestion().isMcq) {
-      <ul class="menu bg-base-100 rounded-box shadow-md w-full gap-4 text-lg">
-        @for (opt of currentQuestion().options; track opt) {
-        <li>
-          <label class="label cursor-pointer flex items-center justify-between">
-            <span class="label-text text-base-content">{{ opt }}</span>
-            <input
-              type="radio"
-              name="answer"
-              class="radio radio-primary"
-              [value]="opt"
-              [(ngModel)]="selectedAnswer"
-            />
-          </label>
-        </li>
-        }
-      </ul>
-      } @else {
-      <textarea
-        class="textarea textarea-bordered textarea-primary text-lg w-full placeholder:text-slate-400"
-        rows="5"
-        [(ngModel)]="selectedAnswer"
-        placeholder="{{ currentQuestion().placeholder }}"
-      ></textarea>
-      } @if(currentQuestion().hint) {
-      <p class="text-sm text-base-content mt-2 flex gap-4 items-center">
-        <mat-icon class="w-8!">{{ currentQuestion().hintIcon }}</mat-icon>
-        <span>{{ currentQuestion().hint }}</span>
-      </p>
-      }
-
-      <div class="card-actions justify-between items-center mt-6">
-        @if(index() > 0) {
-        <button
-          class="btn btn-neutral w-36"
-          (click)="goToPrev()"
-          [disabled]="loading()"
-        >
-          Previous
-        </button>
+      <form [formGroup]="answerToQuestions">
+        @if (currentQuestion().isMcq) {
+        <ul class="menu bg-base-100 rounded-box shadow-md w-full gap-4 text-lg">
+          @for (opt of currentQuestion().options; track opt) {
+          <li>
+            <label
+              class="label cursor-pointer flex items-center justify-between"
+            >
+              <span class="label-text text-base-content">{{ opt }}</span>
+              <input
+                type="radio"
+                class="radio radio-primary"
+                [formControlName]="currentQuestion().question"
+                [value]="opt"
+                [attr.name]="'question_' + index()"
+              />
+            </label>
+          </li>
+          }
+        </ul>
         } @else {
-        <div class="w-36"></div>
-        } @if(index() === lengthOfQuestions - 1) {
-        <div>
+        <textarea
+          class="textarea textarea-bordered textarea-primary text-lg w-full placeholder:text-slate-400"
+          rows="5"
+          [formControlName]="currentQuestion().question"
+          placeholder="{{ currentQuestion().placeholder }}"
+          [attr.id]="'textarea_' + currentQuestion().id"
+          [value]="answerToQuestions.get(currentQuestion().question)?.value"
+        ></textarea>
+        } @if(currentQuestion().hint) {
+        <p class="text-sm text-base-content mt-2 flex gap-4 items-center">
+          <mat-icon class="w-8!">{{ currentQuestion().hintIcon }}</mat-icon>
+          <span>{{ currentQuestion().hint }}</span>
+        </p>
+        }
+
+        <div class="card-actions justify-between items-center mt-6">
+          @if(index() > 0) {
+          <button
+            class="btn btn-neutral w-36"
+            (click)="goToPrev()"
+            [disabled]="loading()"
+          >
+            Previous
+          </button>
+          } @else {
+          <div class="w-36"></div>
+          } @if(index() === lengthOfQuestions - 1) {
+          <div>
+            <button
+              class="btn btn-primary w-36"
+              (click)="submitAnswers()"
+              [disabled]="loading() || limitReached() || (answerToQuestions.touched && !answerToQuestions.valid)"
+            >
+              @if(loading()) {
+              <span class="loading loading-spinner"></span>
+              Generating... } @else { Generate }
+            </button>
+          </div>
+          } @else {
           <button
             class="btn btn-primary w-36"
-            (click)="submitAnswers()"
-            [disabled]="loading() || limitReached()"
+            (click)="goToNext()"
+            [disabled]="loading()"
           >
-            @if(loading()) {
-            <span class="loading loading-spinner"></span>
-            Generating... } @else { Generate }
+            Next
           </button>
+          } @if(answerToQuestions.touched && !answerToQuestions.valid){
+          <p class="text-center mt-2">
+            All fields must be filled before generating a story
+          </p>
+          }
         </div>
-        } @else {
-        <button
-          class="btn btn-primary w-36"
-          (click)="goToNext()"
-          [disabled]="loading()"
-        >
-          Next
-        </button>
-        }
-      </div>
+      </form>
       }
     </div>
     @if(loading()) {
     <div class="text-center p-4">
-      <p class="text-lg">
-        @if(formState()=="initial"){ Generating blueprint. Please wait... }
-        @else if (formState()=="blueprint" || formState()=="customizing") {}
-        Generating story. This can take a few minutes. Please wait...
-      </p>
+      <p class="text-lg">This may take a while. Please wait...</p>
     </div>
     } @if(limitReached()) {
     <div class="text-center p-4">

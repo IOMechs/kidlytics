@@ -8,7 +8,13 @@ import {
   afterNextRender,
 } from '@angular/core';
 import { STORY_QUESTIONS } from '../../../constants/questions';
-import { FormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
 import { StoryLimitService } from '../../services/story-limit.service';
 import { ERROR_CODES } from '../../../constants/error.codes';
@@ -20,7 +26,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-story',
-  imports: [FormsModule, MatIcon],
+  imports: [FormsModule, MatIcon, ReactiveFormsModule],
   templateUrl: './create-story.html',
 })
 export class CreateStory {
@@ -48,7 +54,7 @@ export class CreateStory {
   lengthOfQuestions = STORY_QUESTIONS.length;
   readonly STORY_QUESTIONS = STORY_QUESTIONS;
 
-  answers: Record<string, string> = {};
+  answerToQuestions = new FormGroup({});
 
   constructor() {
     afterNextRender(() => {
@@ -66,14 +72,25 @@ export class CreateStory {
         },
       });
     });
+
+    STORY_QUESTIONS.map((v) => {
+      this.answerToQuestions.addControl(
+        v.question,
+        new FormControl('', Validators.required)
+      );
+    });
   }
 
   get selectedAnswer(): string {
-    return this.answers[this.currentQuestion().question] || '';
+    return (
+      this.answerToQuestions.get(this.currentQuestion().question)?.value || ''
+    );
   }
 
   set selectedAnswer(value: string) {
-    this.answers[this.currentQuestion().question] = value;
+    this.answerToQuestions
+      .get(this.currentQuestion().question)
+      ?.setValue(value);
   }
 
   togglePasswordInput() {
@@ -91,18 +108,16 @@ export class CreateStory {
     });
   }
 
+  previousQuestionIndex: number = 0;
+
   goToNext = () => {
+    this.previousQuestionIndex = this.index();
     this.index.update((v) => v + 1);
-    if (this.currentQuestion().defaultValue && !this.selectedAnswer) {
-      this.selectedAnswer = this.currentQuestion().defaultValue || '';
-    }
   };
 
   goToPrev = () => {
+    this.previousQuestionIndex = this.index();
     this.index.update((v) => v - 1);
-    if (this.currentQuestion().defaultValue && !this.selectedAnswer) {
-      this.selectedAnswer = this.currentQuestion().defaultValue || '';
-    }
   };
 
   generateBlueprint() {
@@ -121,7 +136,8 @@ export class CreateStory {
       .subscribe((blueprint) => {
         this.loading.set(false);
         if (blueprint) {
-          this.answers = blueprint;
+          this.answerToQuestions.patchValue(blueprint);
+
           this.blueprintAnswers.set(blueprint);
           this.formState.set('blueprint');
         }
@@ -141,7 +157,7 @@ export class CreateStory {
   startOver() {
     this.formState.set('initial');
     this.initialStoryPrompt.set('');
-    this.answers = {};
+    this.answerToQuestions.reset();
     this.blueprintAnswers.set(null);
     this.index.set(0);
   }
@@ -177,7 +193,9 @@ export class CreateStory {
             this.loading.set(false);
             return of(null);
           }
-          return this.storyService.getStoryAndImage(this.answers);
+          return this.storyService.getStoryAndImage(
+            this.answerToQuestions.value
+          );
         }),
         catchError((error: HttpErrorResponse) => {
           this.handleError(error);
@@ -196,7 +214,6 @@ export class CreateStory {
         });
 
         this.startOver();
-        console.log(p.url);
       });
   };
 }
