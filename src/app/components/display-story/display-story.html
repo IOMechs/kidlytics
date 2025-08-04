@@ -62,6 +62,12 @@
       [imageUrl]="preloadedImages()[0]?.src || '' "
       [title]="storyTitle()"
     ></app-social-share>
+    <button
+      class="btn btn-primary block my-4 m-auto"
+      (click)="openTestimonialDialog()"
+    >
+      Give Your Feedback
+    </button>
     }
   </div>
   } @if (isPrinting()) {
