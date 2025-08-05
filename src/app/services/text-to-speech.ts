@@ -10,14 +10,14 @@ export interface TTSResponseItem {
 
 export interface TTSApiResponse {
   status: string;
-  audios: string[];
+  data: TTSResponseItem[];
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class TextToSpeech {
-  private readonly API_URL = `${environment.ttsApiUrl}`;
+  private readonly API_URL = `${environment.apiUrl}/api/text-to-speech`;
 
   constructor(private http: HttpClient) {}
 

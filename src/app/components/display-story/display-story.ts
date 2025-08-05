@@ -23,7 +23,7 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
-import { TextToSpeech } from '../../services/text-to-speech';
+import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -110,7 +110,6 @@ export class DisplayStory implements OnInit, OnDestroy {
           this.tts
             .getAudioFromText(this.storyParts().map((v) => v.content))
             .pipe(
-              tap((res: any) => console.log('TTS response:', res)),
               catchError((err) => {
                 console.error('Failed to get audio:', err);
                 return of(null); // or throwError(() => err) if you want it to propagate
@@ -119,9 +118,9 @@ export class DisplayStory implements OnInit, OnDestroy {
             .subscribe((audioBase64) => {
               if (!audioBase64) return;
 
-              const audioUrls: string[] = audioBase64.audios.map(
-                (base64: string) => {
-                  // Strip off data URI prefix if present
+              const audioUrls: string[] = audioBase64.data.map(
+                (data: TTSResponseItem) => {
+                  const { base64 } = data;
                   const base64Data = base64.includes(',')
                     ? base64.split(',')[1]
                     : base64;
@@ -136,7 +135,7 @@ export class DisplayStory implements OnInit, OnDestroy {
 
                   // Create blob and object URL
                   const blob = new Blob([bytes], { type: 'audio/wav' });
-                  return URL.createObjectURL(blob); // ✅ browser-safe audio URL
+                  return URL.createObjectURL(blob);
                 }
               );
 
