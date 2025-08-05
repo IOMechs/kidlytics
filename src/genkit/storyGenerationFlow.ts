@@ -94,6 +94,86 @@ export const storyGenerationFlow = ai.defineFlow(
   }
 );
 
+const blueprintOutputSchema = z.object({
+  'Who is this story for?': z.string(),
+  'What is their age group': z.enum([
+    '1-5 years',
+    '6-10 years',
+    '11-15 years',
+    '15 and above',
+  ]),
+  'Which language would you like the story to be in': z.string(),
+  'What are their favorite things?': z.string(),
+  'What kind of world should the story happen in?': z.enum([
+    '🌌 Space',
+    '🏞️ Jungle',
+    '🏰 Magic Kingdom',
+    '🌊 Underwater',
+    '🏫 School',
+    '🏡 Everyday life',
+  ]),
+  'What should the story teach or focus on?': z.enum([
+    '🧡 Kindness',
+    '💪 Courage',
+    '🧠 Curiosity',
+    '👫 Friendship',
+    '✨ Just for fun',
+  ]),
+  'What mood should the story have?': z.enum([
+    '😂 Funny',
+    '🧙 Magical',
+    '😴 Calm',
+    '🧗 Adventurous',
+  ]),
+});
+
+export const blueprintGenerationFlow = ai.defineFlow(
+  {
+    name: 'blueprintGenerationFlow',
+    inputSchema: z.object({ userContext: z.string() }),
+    outputSchema: blueprintOutputSchema,
+  },
+  async ({ userContext }) => {
+    try {
+      const { output } = await ai.generate({
+        model: vertexAI.model('gemini-2.0-flash'),
+        prompt: `
+You are a story planning assistant. Based on the user's story idea, fill out the following questionnaire. Use the exact wording for each question as keys in your output JSON.
+
+Questions:
+1. "Who is this story for?"
+2. "What is their age group"
+3. "Which language would you like the story to be in"
+4. "What are their favorite things?"
+5. "What kind of world should the story happen in?"
+   (Choose one: '🌌 Space', '🏞️ Jungle', '🏰 Magic Kingdom', '🌊 Underwater', '🏫 School', '🏡 Everyday life')
+6. "What should the story teach or focus on?"
+   (Choose one: '🧡 Kindness', '💪 Courage', '🧠 Curiosity', '👫 Friendship', '✨ Just for fun')
+7. "What mood should the story have?"
+   (Choose one: '😂 Funny', '🧙 Magical', '😴 Calm', '🧗 Adventurous')
+
+Here is the user's story idea:
+---
+${userContext}
+---
+
+Return a JSON object with the exact question strings as keys, and answers as values. For multiple-choice, pick **only** from the options provided. For open-ended, infer from the idea or provide a default.
+Do infer an age group from age (if given in inital prompt) or from other info given
+`,
+        output: {
+          schema: blueprintOutputSchema,
+        },
+      });
+
+      if (!output) throw new Error('No output returned from Gemini');
+      return output;
+    } catch (e) {
+      console.error(e);
+      throw new Error('Error while generating blueprint');
+    }
+  }
+);
+
 export const imageGenerationFlow = ai.defineFlow(
   {
     name: 'imageGenerationFlow',

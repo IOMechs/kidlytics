@@ -1,8 +1,67 @@
 <div class="flex items-center justify-center p-4 container mx-auto max-w-4xl">
   <div class="card sm:w-3/4 w-full shadow-xl bg-base-200">
     <div class="card-body">
+      @if (formState() === 'initial') {
       <h2 class="card-title text-base-content text-xl">
-        {{currentQuestion().question}}
+        Tell me what the story is about
+      </h2>
+      <textarea
+        class="textarea textarea-bordered textarea-primary text-lg w-full placeholder:text-slate-400"
+        rows="5"
+        [(ngModel)]="initialStoryPrompt"
+        placeholder="e.g., A story about a brave little knight who is afraid of the dark and learns to overcome his fear with the help of a friendly dragon."
+      ></textarea>
+      <div class="card-actions justify-end mt-6">
+        <button
+          class="btn btn-primary w-48"
+          (click)="generateBlueprint()"
+          [disabled]="loading() || !initialStoryPrompt()"
+        >
+          @if(loading()) {
+          <span class="loading loading-spinner"></span>
+          Generating Ideas... }@else { Generate Story Ideas }
+        </button>
+      </div>
+      } @else if (formState() === 'blueprint' && blueprintAnswers()) {
+      <h2 class="card-title text-base-content text-xl">
+        Here's a plan for the story.
+      </h2>
+      <p class="text-base-content mb-4">
+        Review the details below. You can either generate the story directly or
+        customize the details further.
+      </p>
+      <ul class="menu bg-base-100 rounded-box shadow-md w-full gap-2 text-base">
+        @for (question of STORY_QUESTIONS; track question.id) {
+        <li>
+          <div class="flex justify-between p-2">
+            <span class="font-semibold">{{ question.question }}</span>
+            <span class="text-right"
+              >{{ blueprintAnswers()![question.question.trim()] }}</span
+            >
+          </div>
+        </li>
+        }
+      </ul>
+      <div class="card-actions justify-between items-center mt-6">
+        <button class="btn btn-ghost" (click)="startOver()">Start Over</button>
+        <div>
+          <button class="btn btn-secondary mr-2" (click)="customize()">
+            Customize
+          </button>
+          <button
+            class="btn btn-primary"
+            (click)="confirmAndGenerate()"
+            [disabled]="loading()"
+          >
+            @if(loading()) {
+            <span class="loading loading-spinner"></span>
+            Generating... }@else { Confirm & Generate }
+          </button>
+        </div>
+      </div>
+      } @else if (formState() === 'customizing') {
+      <h2 class="card-title text-base-content text-xl">
+        {{ currentQuestion().question }}
       </h2>
 
       @if (currentQuestion().isMcq) {
@@ -27,12 +86,12 @@
         class="textarea textarea-bordered textarea-primary text-lg w-full placeholder:text-slate-400"
         rows="5"
         [(ngModel)]="selectedAnswer"
-        placeholder="{{currentQuestion().placeholder}}"
+        placeholder="{{ currentQuestion().placeholder }}"
       ></textarea>
       } @if(currentQuestion().hint) {
       <p class="text-sm text-base-content mt-2 flex gap-4 items-center">
-        <mat-icon class="w-8!">{{currentQuestion().hintIcon}}</mat-icon>
-        <span>{{currentQuestion().hint}}</span>
+        <mat-icon class="w-8!">{{ currentQuestion().hintIcon }}</mat-icon>
+        <span>{{ currentQuestion().hint }}</span>
       </p>
       }
 
@@ -46,7 +105,6 @@
           Previous
         </button>
         } @else {
-        <!-- Placeholder to keep alignment -->
         <div class="w-36"></div>
         } @if(index() === lengthOfQuestions - 1) {
         <div>
@@ -70,12 +128,11 @@
         </button>
         }
       </div>
+      }
     </div>
     @if(loading()) {
     <div class="text-center p-4">
-      <p class="text-lg">
-        Generating story. This can take a few minutes. Please wait...
-      </p>
+      <p class="text-lg">This may take a while. Please wait...</p>
     </div>
     } @if(limitReached()) {
     <div class="text-center p-4">

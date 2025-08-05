@@ -12,6 +12,7 @@ export type StoryGenerationStatus = {
   status: 'Error' | 'Success';
   message: string;
   url?: string;
+  errorCode?: number;
 };
 
 export type ModalContentT = StoryGenerationStatus & {

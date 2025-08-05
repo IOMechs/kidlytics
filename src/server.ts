@@ -4,14 +4,22 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import { fileURLToPath } from 'url';
+
+// Polyfill for __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+
 import express, { Request, Response, NextFunction } from 'express';
 import { join } from 'node:path';
 import {
   imageGenerationFlow,
   storyGenerationFlow,
+  blueprintGenerationFlow,
 } from './genkit/storyGenerationFlow';
 import * as dotenv from 'dotenv';
 import axios from 'axios';
+import { EdgeTTS, SynthesisResult } from '@duyquangnvx/edge-tts';
+import { ERROR_CODES } from './constants/error.codes';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -20,11 +28,33 @@ dotenv.config({ path: '.env.local' });
 app.set('trust proxy', 1); // Trust the first proxy
 const angularApp = new AngularNodeAppEngine();
 
-const rateLimiter = async (
-  req: Request,
+const sendError = (
   res: Response,
-  next: NextFunction
+  errorType: keyof typeof ERROR_CODES,
+  underlyingError?: any
 ) => {
+  const error = ERROR_CODES[errorType];
+  console.error(
+    `Responding with error ${error.code}: ${error.message}`,
+    underlyingError || ''
+  );
+
+  let httpStatus = 500; // Default to Internal Server Error
+  if (error.code === ERROR_CODES.IMAGE_SAFETY_BLOCK.code) httpStatus = 400;
+  if (error.code === ERROR_CODES.RATE_LIMIT_EXCEEDED.code) httpStatus = 429;
+  if (error.code === ERROR_CODES.BLUEPRINT_GENERATION_FAILED.code)
+    httpStatus = 400;
+
+  res.status(httpStatus).json({
+    error: {
+      code: error.code,
+      message: error.message,
+    },
+  });
+};
+
+
+const rateLimiter = async (req: Request, res: Response, next: NextFunction) => {
   if (process.env['enableStoryGenerationLimit'] !== 'true') {
     return next();
   }
@@ -71,8 +101,20 @@ app.post(
       const result = await storyGenerationFlow(req.body);
       res.json(result);
     } catch (err) {
-      console.error('Flow error:', err);
-      res.status(500).json({ error: `Failed to generate story ${err}` });
+      sendError(res, 'STORY_GENERATION_FAILED', err);
+    }
+  }
+);
+
+app.post(
+  '/api/generateBlueprint',
+  express.json(),
+  async (req: Request, res: Response) => {
+    try {
+      const result = await blueprintGenerationFlow(req.body);
+      res.json(result);
+    } catch (err) {
+      sendError(res, 'BLUEPRINT_GENERATION_FAILED', err);
     }
   }
 );
@@ -88,11 +130,16 @@ app.post(
         imagePrompt,
         seed,
       });
-      if (!imageUri) throw new Error('Error while generating image');
+      if (!imageUri) {
+        return sendError(res, 'IMAGE_URI_MISSING');
+      }
       res.json({ imageUri });
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: `Error while generating image ${error}` });
+      const errorMessage = error instanceof Error ? error.message : '';
+      if (errorMessage.toLowerCase().includes('safety')) {
+        return sendError(res, 'IMAGE_SAFETY_BLOCK', error);
+      }
+      return sendError(res, 'IMAGE_GENERATION_FAILED', error);
     }
   }
 );
@@ -135,6 +182,56 @@ app.post(
         message: 'Internal server error.',
       };
       res.status(status).json(data);
+    }
+  }
+);
+
+app.post(
+  '/api/text-to-speech',
+  express.json(),
+  async (req: Request, res: Response) => {
+    try {
+      const { content } = req.body;
+
+      if (!Array.isArray(content) || content.length === 0) {
+        res
+          .status(400)
+          .json({ status: 'Error', message: 'Invalid content array' });
+        return;
+      }
+
+      const tts = new EdgeTTS();
+      const voice = 'en-US-EmmaNeural';
+
+      const results = await Promise.all(
+        content.map(async (text: string, index: number) => {
+          const result: SynthesisResult = await tts.synthesize(text, voice, {
+            rate: -10,
+            volume: 0,
+            pitch: 10,
+          });
+          const base64Audio = result.toBase64(); // base64 string of mp3
+          return {
+            index,
+            text,
+            base64: `data:audio/mp3;base64,${base64Audio}`,
+          };
+        })
+      );
+
+      res.status(200).json({
+        status: 'Success',
+        data: results,
+      });
+    } catch (error) {
+      console.error('TTS Error:', error);
+      res.status(500).json({
+        status: 'Error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate voiceover',
+      });
     }
   }
 );

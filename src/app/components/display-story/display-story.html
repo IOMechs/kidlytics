@@ -54,6 +54,8 @@
       [currentIndex]="currentIndex()"
       (changeIndex)="modifyIndex($event)"
       (toggleSpeaking)="handleSpeech($event)"
+      [audioPart]="storyAudio()[currentIndex()]"
+      [shouldSpeak]="speakingSignal()"
     ></app-story-card>
     <app-social-share
       [shareUrl]="getShareUrl()"

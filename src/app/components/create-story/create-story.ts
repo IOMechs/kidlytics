@@ -11,6 +11,7 @@ import { STORY_QUESTIONS } from '../../../constants/questions';
 import { FormsModule } from '@angular/forms';
 import { GenerateStory } from '../../services/generate-story';
 import { StoryLimitService } from '../../services/story-limit.service';
+import { ERROR_CODES } from '../../../constants/error.codes';
 
 import { StoryGenerationStatus } from '../../model/story.type';
 import { catchError, of, switchMap } from 'rxjs';
@@ -24,6 +25,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export class CreateStory {
   //signals
+  formState = signal<'initial' | 'blueprint' | 'customizing'>('initial');
+  initialStoryPrompt = signal('');
+  blueprintAnswers = signal<Record<string, string> | null>(null);
+
   index = signal(0);
   currentQuestion = computed(() => STORY_QUESTIONS[this.index()]);
   showPasswordInput = signal(false);
@@ -41,7 +46,7 @@ export class CreateStory {
   loading = model(false);
 
   lengthOfQuestions = STORY_QUESTIONS.length;
-  isMcq = this.currentQuestion().isMcq;
+  readonly STORY_QUESTIONS = STORY_QUESTIONS;
 
   answers: Record<string, string> = {};
 
@@ -100,6 +105,66 @@ export class CreateStory {
     }
   };
 
+  generateBlueprint() {
+    if (!this.initialStoryPrompt().trim()) {
+      return;
+    }
+    this.loading.set(true);
+    this.storyService
+      .getStoryBlueprint(this.initialStoryPrompt())
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          this.handleError(error);
+          return of(null);
+        })
+      )
+      .subscribe((blueprint) => {
+        this.loading.set(false);
+        if (blueprint) {
+          this.answers = blueprint;
+          this.blueprintAnswers.set(blueprint);
+          this.formState.set('blueprint');
+        }
+      });
+  }
+
+  confirmAndGenerate() {
+    // `this.answers` is already populated from the blueprint
+    this.submitAnswers();
+  }
+
+  customize() {
+    this.formState.set('customizing');
+    this.index.set(0);
+  }
+
+  startOver() {
+    this.formState.set('initial');
+    this.initialStoryPrompt.set('');
+    this.answers = {};
+    this.blueprintAnswers.set(null);
+    this.index.set(0);
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('API Error:', error);
+    this.loading.set(false);
+
+    const apiError = error.error?.error;
+    const defaultError = ERROR_CODES.UNKNOWN_ERROR;
+
+    if (error.status === 429) {
+      this.limitReached.set(true);
+    }
+
+    this.statusChanged.emit({
+      status: 'Error',
+      message: apiError?.message || defaultError.message,
+      url: '',
+      errorCode: apiError?.code || defaultError.code,
+    });
+  }
+
   submitAnswers = async () => {
     this.loading.set(true);
 
@@ -115,22 +180,7 @@ export class CreateStory {
           return this.storyService.getStoryAndImage(this.answers);
         }),
         catchError((error: HttpErrorResponse) => {
-          console.error('Error occurred while generating story/image:', error);
-          this.loading.set(false);
-
-          if (error.status === 429) {
-            this.limitReached.set(true);
-          }
-
-          this.statusChanged.emit({
-            status: 'Error',
-            message:
-              error.error?.message ||
-              'Failed to generate story or image. Please try again.',
-            url: '',
-          });
-
-          // Return an empty observable to stop further processing
+          this.handleError(error);
           return of(null);
         })
       )
@@ -145,6 +195,7 @@ export class CreateStory {
           url: p.url,
         });
 
+        this.startOver();
         console.log(p.url);
       });
   };

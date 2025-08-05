@@ -11,7 +11,7 @@ export const STORY_QUESTIONS = [
   },
   {
     id: '2',
-    question: 'What is their age group ',
+    question: 'What is their age group',
     isMcq: true,
     options: ['1-5 years', '6-10 years', '11-15 years', '15 and above'],
     placeholder: '',
