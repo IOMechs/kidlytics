@@ -23,6 +23,9 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
+import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
+import { catchError, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-display-story',
@@ -52,6 +55,8 @@ export class DisplayStory implements OnInit, OnDestroy {
   imagesLoaded = signal<boolean[]>([]);
   preloadedImages = signal<(HTMLImageElement | null)[]>([]);
   isPrinting = signal(false);
+  speakingSignal = signal(false);
+  storyAudio = signal<string[]>([]);
 
   // For modal content
   modalContent = signal<{
@@ -63,6 +68,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   });
 
   readonly dialog = inject(MatDialog);
+  private tts = inject(TextToSpeech);
 
   constructor(private route: ActivatedRoute, private meta: Meta) {}
 
@@ -99,6 +105,43 @@ export class DisplayStory implements OnInit, OnDestroy {
 
           // Preload all images
           this.preloadAllImages();
+
+          console.log('here');
+          this.tts
+            .getAudioFromText(this.storyParts().map((v) => v.content))
+            .pipe(
+              catchError((err) => {
+                console.error('Failed to get audio:', err);
+                return of(null); // or throwError(() => err) if you want it to propagate
+              })
+            )
+            .subscribe((audioBase64) => {
+              if (!audioBase64) return;
+
+              const audioUrls: string[] = audioBase64.data.map(
+                (data: TTSResponseItem) => {
+                  const { base64 } = data;
+                  const base64Data = base64.includes(',')
+                    ? base64.split(',')[1]
+                    : base64;
+
+                  // Decode base64 to binary
+                  const binary = atob(base64Data);
+                  const bytes = new Uint8Array(binary.length);
+
+                  for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                  }
+
+                  // Create blob and object URL
+                  const blob = new Blob([bytes], { type: 'audio/wav' });
+                  return URL.createObjectURL(blob);
+                }
+              );
+
+              this.storyAudio.set(audioUrls);
+              console.log(this.storyAudio());
+            });
 
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
@@ -159,6 +202,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('beforeprint', this.beforePrint);
     window.removeEventListener('afterprint', this.afterPrint);
+    this.speakingSignal.set(false);
   }
 
   private beforePrint = () => {
@@ -248,6 +292,10 @@ export class DisplayStory implements OnInit, OnDestroy {
     setTimeout(() => {
       window.print();
     }, 100);
+  }
+
+  handleSpeech(shouldSpeak: boolean) {
+    this.speakingSignal.set(shouldSpeak);
   }
 }
 

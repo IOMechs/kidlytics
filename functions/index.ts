@@ -7,7 +7,6 @@ dotenv.config();
 admin.initializeApp();
 const db = admin.firestore();
 const corsHandler = cors({ origin: true });
-
 export const rateLimiter = functions.https.onRequest(async (req, res) => {
   corsHandler(req, res, async () => {
     if (process.env.ENABLE_STORY_GENERATION_LIMIT !== 'true') {

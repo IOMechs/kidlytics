@@ -4,6 +4,11 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import { fileURLToPath } from 'url';
+
+// Polyfill for __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+
 import express, { Request, Response, NextFunction } from 'express';
 import { join } from 'node:path';
 import {
@@ -12,6 +17,7 @@ import {
 } from './genkit/storyGenerationFlow';
 import * as dotenv from 'dotenv';
 import axios from 'axios';
+import { EdgeTTS, SynthesisResult } from '@duyquangnvx/edge-tts';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -20,11 +26,7 @@ dotenv.config({ path: '.env.local' });
 app.set('trust proxy', 1); // Trust the first proxy
 const angularApp = new AngularNodeAppEngine();
 
-const rateLimiter = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const rateLimiter = async (req: Request, res: Response, next: NextFunction) => {
   if (process.env['enableStoryGenerationLimit'] !== 'true') {
     return next();
   }
@@ -135,6 +137,56 @@ app.post(
         message: 'Internal server error.',
       };
       res.status(status).json(data);
+    }
+  }
+);
+
+app.post(
+  '/api/text-to-speech',
+  express.json(),
+  async (req: Request, res: Response) => {
+    try {
+      const { content } = req.body;
+
+      if (!Array.isArray(content) || content.length === 0) {
+        res
+          .status(400)
+          .json({ status: 'Error', message: 'Invalid content array' });
+        return;
+      }
+
+      const tts = new EdgeTTS();
+      const voice = 'en-US-EmmaNeural';
+
+      const results = await Promise.all(
+        content.map(async (text: string, index: number) => {
+          const result: SynthesisResult = await tts.synthesize(text, voice, {
+            rate: -10,
+            volume: 0,
+            pitch: 10,
+          });
+          const base64Audio = result.toBase64(); // base64 string of mp3
+          return {
+            index,
+            text,
+            base64: `data:audio/mp3;base64,${base64Audio}`,
+          };
+        })
+      );
+
+      res.status(200).json({
+        status: 'Success',
+        data: results,
+      });
+    } catch (error) {
+      console.error('TTS Error:', error);
+      res.status(500).json({
+        status: 'Error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate voiceover',
+      });
     }
   }
 );
