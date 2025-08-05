@@ -253,6 +253,10 @@ export class DisplayStory implements OnInit, OnDestroy {
     });
   }
 
+  checkFeedbackSubmitted(): boolean {
+    return localStorage.getItem('feedbackSubmitted')?.includes('true') || false;
+  }
+
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
   }

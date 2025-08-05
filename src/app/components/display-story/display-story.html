@@ -62,13 +62,17 @@
       [imageUrl]="preloadedImages()[0]?.src || '' "
       [title]="storyTitle()"
     ></app-social-share>
+
+    <!-- Only display button if feedback is not submitted -->
+    @if(!checkFeedbackSubmitted()){
+
     <button
       class="btn btn-primary block my-4 m-auto"
       (click)="openTestimonialDialog()"
     >
       Give Your Feedback
     </button>
-    }
+    } }
   </div>
   } @if (isPrinting()) {
   <div class="print-container">

@@ -24,3 +24,9 @@ export type Story = {
   title: string;
   ageGroup: string;
 };
+
+export type Testimonial = {
+  name: string;
+  rating: number;
+  feedback: string;
+};

@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule } from '@angular/forms';
+import { Testimonial } from '../../../services/testimonial';
 @Component({
   selector: 'app-dialog-box',
   imports: [
@@ -30,6 +31,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 })
 export class TestimonialDialog {
   data = inject(MAT_DIALOG_DATA);
+  testimonialService = inject(Testimonial);
   feedbackForm: FormGroup;
   ratings = [1, 2, 3, 4, 5];
 
@@ -51,9 +53,18 @@ export class TestimonialDialog {
     );
   }
 
-  submitFeedback() {
+  async submitFeedback() {
     if (this.feedbackForm.valid) {
       console.log('Feedback submitted:', this.feedbackForm.value);
+      try {
+        await this.testimonialService.uploadTestimonial(
+          this.feedbackForm.value
+        );
+        localStorage.setItem('feedbackSubmitted', 'true');
+      } catch (e) {
+        console.log(e);
+      }
+
       // Optionally reset the form
       this.feedbackForm.reset();
     }
