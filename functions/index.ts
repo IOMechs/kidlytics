@@ -145,42 +145,47 @@ export const kokoroTTS = functions.https.onRequest(async (req, res) => {
 
 export const mmsTTSEng = functions
   .runWith({ timeoutSeconds: 300, memory: '2GB' })
-  .https.onRequest(async (req, res) => {
-    try {
-      const { content } = req.body;
+  .https.onRequest((req, res) => {
+    corsHandler(req, res, async () => {
+      try {
+        const { content } = req.body;
 
-      if (!Array.isArray(content)) {
-        res.status(400).json({ error: 'content must be an array of strings' });
-        return;
+        if (!Array.isArray(content)) {
+          res
+            .status(400)
+            .json({ error: 'content must be an array of strings' });
+          return;
+        }
+
+        const tts = await pipeline('text-to-speech', 'Xenova/mms-tts-eng', {
+          quantized: false,
+        });
+
+        const audioBuffers: string[] = [];
+
+        for (const text of content) {
+          const result = await tts(text, {});
+          const float32Audio = Float32Array.from(result.audio);
+
+          const wav = new wavefile.WaveFile();
+          wav.fromScratch(1, result.sampling_rate, '32f', float32Audio);
+
+          audioBuffers.push(wav.toBase64());
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json({
+          message: 'Audio generated for all content parts',
+          audios: audioBuffers,
+        });
+      } catch (error) {
+        console.error('TTS Error:', error);
+        res.status(500).json({
+          error:
+            error instanceof Error ? error.message : 'Internal Server Error',
+        });
       }
-
-      // Dynamically load the synthesizer inside the function
-      const tts = await pipeline('text-to-speech', 'Xenova/mms-tts-eng', {
-        quantized: false,
-      });
-
-      const audioBuffers: string[] = [];
-
-      for (const text of content) {
-        const result = await tts(text, {});
-
-        const wav = new wavefile.WaveFile();
-        wav.fromScratch(1, result.sampling_rate, '32f', result.audio);
-
-        audioBuffers.push(wav.toBase64());
-      }
-
-      res.setHeader('Content-Type', 'application/json');
-      res.status(200).json({
-        message: 'Audio generated for all content parts',
-        audios: audioBuffers,
-      });
-    } catch (error) {
-      console.error('TTS Error:', error);
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Internal Server Error',
-      });
-    }
+    });
   });
 
 const speaker_embeddings_url =

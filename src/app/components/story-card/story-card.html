@@ -20,6 +20,8 @@
       <div class="skeleton w-full h-full"></div>
       }
     </figure>
+    @if(audioPart()){
+
     <audio #myAudio [src]="audioPart()" preload="auto" (ended)="stop()"></audio>
 
     <div class="flex justify-center mt-4 gap-2">
@@ -36,6 +38,7 @@
       }
     </div>
 
+    }
     <div class="card-body items-center text-center py-2">
       <p class="text-base-content">{{ currentStoryPart().content }}</p>
       <div class="card-actions justify-between w-full items-center">
