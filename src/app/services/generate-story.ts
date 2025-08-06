@@ -96,6 +96,8 @@ export class GenerateStory {
           - Ensure the image is suitable for children aged ${ageGroup} and does not contain any inappropriate content.
           - The image should be colorful, engaging, and visually appealing to children.
           - The image should be suitable for a story about ${storyName}.
+          - MOST IMPORTANT INSTRUCTION : Deeply analyze the reference image provided to you, make sure each character in the new image looks exactly the same as it does in previous image if it is there, because both are the scenes of the same story .
+          - The given image was generated against this prompt : ${prevImgPrompt}
 `;
         return this.generateImage(
           {

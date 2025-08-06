@@ -109,6 +109,10 @@ export class StoryCard {
   }
 
   stop(): void {
-    this.toggleSpeaking.emit(false);
+    if (this.currentIndex() >= this.storyLength() - 1) {
+      this.toggleSpeaking.emit(false);
+    } else {
+      setTimeout(() => this.nextCard(), 1000);
+    }
   }
 }

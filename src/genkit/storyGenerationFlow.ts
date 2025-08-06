@@ -208,6 +208,7 @@ export const imageGenerationFlow = ai.defineFlow(
             ],
 
         output: { format: 'media' },
+
         config: {
           safetySetting: 'block_few',
           aspectRatio: '16:9',
