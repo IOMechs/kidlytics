@@ -132,11 +132,7 @@
     </div>
     @if(loading()) {
     <div class="text-center p-4">
-      <p class="text-lg">
-        @if(formState()=="initial"){ Generating blueprint. Please wait... }
-        @else if (formState()=="blueprint" || formState()=="customizing") {}
-        Generating story. This can take a few minutes. Please wait...
-      </p>
+      <p class="text-lg">This may take a while. Please wait...</p>
     </div>
     } @if(limitReached()) {
     <div class="text-center p-4">
