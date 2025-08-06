@@ -24,9 +24,11 @@ import {
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
 import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
-import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
+
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
+import { generateStoryPdf } from '../../utils/pdfGenertor';
 
 @Component({
   selector: 'app-display-story',
@@ -76,9 +78,6 @@ export class DisplayStory implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute, private meta: Meta) {}
 
   ngOnInit(): void {
-    window.addEventListener('beforeprint', this.beforePrint);
-    window.addEventListener('afterprint', this.afterPrint);
-
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -203,8 +202,6 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('beforeprint', this.beforePrint);
-    window.removeEventListener('afterprint', this.afterPrint);
     this.speakingSignal.set(false);
   }
 
@@ -293,16 +290,13 @@ export class DisplayStory implements OnInit, OnDestroy {
     return window.location.href;
   }
 
-  print(): void {
-    // Manually trigger the printing state to ensure the print view is rendered
-    this.isPrinting.set(true);
-
-    // Use a timeout to allow Angular to render the print view before the print dialog opens.
-    // This helps prevent race conditions. The `afterprint` event will handle
-    // setting `isPrinting` back to false.
-    setTimeout(() => {
-      window.print();
-    }, 100);
+  async print(): Promise<void> {
+    let storyData = [...this.storyParts()];
+    storyData = storyData.map((v, i) => ({
+      content: v.content,
+      imageUri: this.preloadedImages()[i]?.src || '',
+    }));
+    await generateStoryPdf(this.storyTitle(), storyData);
   }
 
   handleSpeech(shouldSpeak: boolean) {
