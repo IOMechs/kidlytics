@@ -7,7 +7,6 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import {
   DomSanitizer,
-  HammerModule,
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
@@ -24,13 +23,15 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    importProvidersFrom(MatDialogModule, MatIconModule, HammerModule), provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          }), provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          }),
+    importProvidersFrom(MatDialogModule, MatIconModule),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };
 
