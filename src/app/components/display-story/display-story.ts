@@ -26,6 +26,7 @@ import { Meta } from '@angular/platform-browser';
 import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 
 @Component({
   selector: 'app-display-story',
@@ -57,6 +58,8 @@ export class DisplayStory implements OnInit, OnDestroy {
   isPrinting = signal(false);
   speakingSignal = signal(false);
   storyAudio = signal<string[]>([]);
+
+  testimonialDialog = inject(MatDialog);
 
   // For modal content
   modalContent = signal<{
@@ -243,6 +246,10 @@ export class DisplayStory implements OnInit, OnDestroy {
       data: this.modalContent(),
       width: '500px',
     });
+  }
+
+  openTestimonialDialog(): void {
+    this.testimonialDialog.open(TestimonialDialog);
   }
 
   maxRetries = 3;

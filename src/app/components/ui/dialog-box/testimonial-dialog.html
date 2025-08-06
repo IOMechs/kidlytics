@@ -1,0 +1,58 @@
+<form
+  [formGroup]="feedbackForm"
+  (ngSubmit)="submitFeedback()"
+  class="w-full max-w-sm mx-auto p-6 space-y-4 bg-base-100 rounded-lg shadow-md"
+>
+  <h2 mat-dialog-title>Feedback Form</h2>
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Your Name*</span>
+    </label>
+    <input
+      matInput
+      formControlName="name"
+      placeholder="John Doe"
+      class="input input-bordered"
+    />
+  </div>
+
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Rating (1–5)*</span>
+    </label>
+    <input
+      matInput
+      formControlName="rating"
+      type="number"
+      class="input input-bordered"
+      min="1"
+      max="5"
+    />
+    @if(ratingHasError()){
+    <span>Please enter a value between 1-5</span>
+    }
+  </div>
+
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Your Feedback*</span>
+    </label>
+    <textarea
+      matInput
+      formControlName="feedback"
+      rows="3"
+      placeholder="Tell us what you think and what can we do better..."
+      class="textarea textarea-bordered"
+    ></textarea>
+  </div>
+  <mat-dialog-actions align="end">
+    <button
+      type="submit"
+      class="btn btn-primary w-full"
+      mat-dialog-close
+      [disabled]="feedbackForm.invalid"
+    >
+      Submit
+    </button>
+  </mat-dialog-actions>
+</form>

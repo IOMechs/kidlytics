@@ -22,7 +22,6 @@ export const STORY_QUESTIONS = [
     isMcq: false,
     options: [],
     placeholder: 'e.g. English',
-    defaultValue: 'English',
   },
   {
     id: '4',
