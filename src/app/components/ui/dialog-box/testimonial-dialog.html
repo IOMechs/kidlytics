@@ -28,9 +28,11 @@
       min="1"
       max="5"
     />
-    @if(ratingHasError()){
-    <span>Please enter a value between 1-5</span>
-    }
+    <div class="min-h-[1.5rem] pt-1">
+      @if(ratingHasError()){
+      <span class="text-xs text-error">Please enter a value between 1-5</span>
+      }
+    </div>
   </div>
 
   <div class="form-control">
@@ -50,7 +52,7 @@
       type="submit"
       class="btn btn-primary w-full"
       mat-dialog-close
-      [disabled]="feedbackForm.invalid"
+      [disabled]="feedbackForm.invalid "
     >
       Submit
     </button>
