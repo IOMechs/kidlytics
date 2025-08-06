@@ -6,6 +6,7 @@ import { ConsentBanner } from './components/consent-banner/consent-banner';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { registerIcons } from './app.config';
+import { PwaUpdateService } from './services/pwa-update.service';
 
 @Component({
   selector: 'app-root',
@@ -19,5 +20,6 @@ export class App {
     const iconRegistry = inject(MatIconRegistry);
     const sanitizer = inject(DomSanitizer);
     registerIcons(iconRegistry, sanitizer);
+    inject(PwaUpdateService);
   }
 }

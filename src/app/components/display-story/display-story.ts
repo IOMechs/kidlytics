@@ -23,7 +23,9 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
-import { TextToSpeech } from '../../services/text-to-speech';
+import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
+import { catchError, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 
 @Component({
@@ -107,6 +109,43 @@ export class DisplayStory implements OnInit, OnDestroy {
           // Preload all images
           this.preloadAllImages();
 
+          console.log('here');
+          this.tts
+            .getAudioFromText(this.storyParts().map((v) => v.content))
+            .pipe(
+              catchError((err) => {
+                console.error('Failed to get audio:', err);
+                return of(null); // or throwError(() => err) if you want it to propagate
+              })
+            )
+            .subscribe((audioBase64) => {
+              if (!audioBase64) return;
+
+              const audioUrls: string[] = audioBase64.data.map(
+                (data: TTSResponseItem) => {
+                  const { base64 } = data;
+                  const base64Data = base64.includes(',')
+                    ? base64.split(',')[1]
+                    : base64;
+
+                  // Decode base64 to binary
+                  const binary = atob(base64Data);
+                  const bytes = new Uint8Array(binary.length);
+
+                  for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                  }
+
+                  // Create blob and object URL
+                  const blob = new Blob([bytes], { type: 'audio/wav' });
+                  return URL.createObjectURL(blob);
+                }
+              );
+
+              this.storyAudio.set(audioUrls);
+              console.log(this.storyAudio());
+            });
+
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
 
@@ -153,17 +192,6 @@ export class DisplayStory implements OnInit, OnDestroy {
               content: data['storyParts'][0].imageUri || '',
             },
           ]);
-
-          this.tts
-            .getAudioFromText(this.storyParts().map((v) => v.content))
-            .subscribe((audioBase64) => {
-              console.log(audioBase64.data);
-              let audioArr: string[] = [];
-              audioBase64.data.map((v) => {
-                audioArr.push(v.base64);
-              });
-              this.storyAudio.set(audioArr);
-            });
         }
       } catch (err) {
         console.error(err);
