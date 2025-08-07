@@ -30,10 +30,10 @@
         Review the details below. You can either generate the story directly or
         customize the details further.
       </p>
-      <ul class="menu bg-base-100 rounded-box shadow-md w-full gap-2 text-base">
+      <ul class="bg-base-100 rounded-box shadow-md w-full gap-2 text-base">
         @for (question of STORY_QUESTIONS; track question.id) {
         <li>
-          <div class="flex justify-between p-2">
+          <div class="flex justify-between p-4">
             <span class="font-semibold">{{ question.question }}</span>
             <span class="text-right"
               >{{ blueprintAnswers()![question.question.trim()] }}</span
