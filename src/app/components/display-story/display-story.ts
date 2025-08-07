@@ -220,14 +220,6 @@ export class DisplayStory implements OnInit, OnDestroy {
     this.speakingSignal.set(false);
   }
 
-  private beforePrint = () => {
-    this.isPrinting.set(true);
-  };
-
-  private afterPrint = () => {
-    this.isPrinting.set(false);
-  };
-
   formatDate(timestamp: any): string {
     const milliseconds =
       timestamp.seconds * 1000 + timestamp.nanoseconds / 1_000_000;
@@ -306,12 +298,15 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   async print(): Promise<void> {
+    this.isPrinting.set(true);
+    console.log('print');
     let storyData = [...this.storyParts()];
     storyData = storyData.map((v, i) => ({
       content: v.content,
       imageUri: this.preloadedImages()[i]?.src || '',
     }));
     await generateStoryPdf(this.storyTitle(), storyData);
+    this.isPrinting.set(false);
   }
 
   handleSpeech(shouldSpeak: boolean) {

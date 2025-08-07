@@ -6,7 +6,6 @@
 <div
   class="flex flex-col items-center px-4 py-3 w-full min-h-screen bg-base-100"
 >
-  @if (!isPrinting()) {
   <div>
     <div class="flex flex-col items-center justify-baseline gap-4 w-full mb-4">
       <div class="flex items-center gap-4">
@@ -38,13 +37,16 @@
             matTooltip="Print story"
             matTooltipPosition="above"
             (click)="print()"
+            [disabled]="isPrinting()"
           >
             <mat-icon class="text-secondary!">print</mat-icon>
           </button>
         </div>
       </div>
     </div>
-    @defer{
+    @if(isPrinting()){
+    <p class="text-center pb-2">Preparing your PDF...</p>
+    } @defer{
 
     <app-story-card
       [isLoading]="isLoading()"
@@ -75,7 +77,7 @@
     </button>
     } }
   </div>
-  }
+
   <div id="pdf-html-container" style="display: none"></div>
 </div>
 }

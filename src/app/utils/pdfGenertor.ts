@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-
 /**
  * Generate a square-shaped storybook PDF with dark theme
  * @param title The title of the story
@@ -13,7 +12,6 @@ export async function generateStoryPdf(
     console.error('No story parts found.');
     return;
   }
-
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -21,7 +19,7 @@ export async function generateStoryPdf(
   });
 
   const margin = 10;
-  const usableWidth = 150 - margin * 2;
+  const usableWidth = 190 - margin * 2;
   const imageHeight = (usableWidth * 9) / 16; // 16:9 aspect ratio
 
   for (let i = 0; i < storyParts.length; i++) {
@@ -33,8 +31,8 @@ export async function generateStoryPdf(
 
     // Title on first page
     if (i === 0) {
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(24);
+      pdf.setFont('times', 'bold');
       pdf.setTextColor(248, 248, 242); // Dracula foreground
       pdf.text(title, 105, 20, { align: 'center' });
     }
@@ -50,7 +48,7 @@ export async function generateStoryPdf(
 
     // Add text
     const textStartY = (i === 0 ? 30 : margin) + imageHeight + 10;
-    pdf.setFontSize(12);
+    pdf.setFontSize(18);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(248, 248, 242); // Dracula foreground
 
@@ -62,10 +60,6 @@ export async function generateStoryPdf(
 
     pdf.textWithLink('Generated on Kidlytics', 105, 200, {
       url: 'https://kidlytics--kidlytics.europe-west4.hosted.app/',
-      align: 'center',
-    });
-    pdf.textWithLink('Powered by IOMechs', 105, 205, {
-      url: 'https://iomechs.com',
       align: 'center',
     });
 
