@@ -16,7 +16,7 @@
 
         <div class="flex items-center gap-2">
           <div
-            class="badge badge-secondary"
+            class="badge badge-secondary sm:text-xs sm:w-auto w-14"
             matTooltip="Appropriate for Age {{ ageGroup() }}"
             matTooltipPosition="above"
           >
@@ -56,6 +56,7 @@
       (toggleSpeaking)="handleSpeech($event)"
       [audioPart]="storyAudio()[currentIndex()]"
       [shouldSpeak]="speakingSignal()"
+      [language]="storyLanguage()"
     ></app-story-card>
     <app-social-share
       [shareUrl]="getShareUrl()"

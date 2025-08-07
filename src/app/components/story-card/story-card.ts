@@ -37,6 +37,8 @@ export class StoryCard {
   isLoading = input<boolean>();
   currentIndex = input<number>(0);
 
+  language = input<string>('');
+
   currentImage = input<string>('');
   currentStoryPart = input<StoryPartWithImg>({
     content: '',
