@@ -77,6 +77,20 @@ export class GenerateStory {
     let prevImgPrompt = '';
     let language = '';
     let seed = Math.floor(Math.random() * 10);
+
+    const cleanValue = (str: string | undefined): string | undefined => {
+      if (!str) {
+        return undefined;
+      }
+      // This regex removes most emojis and symbols, then trims whitespace.
+      return str
+        .replace(
+          /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+          ''
+        )
+        .trim();
+    };
+
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
         storyName = story.title;
@@ -134,7 +148,17 @@ export class GenerateStory {
           createdAt: new Date(),
           userPrompt,
           ageGroup,
-          language,
+          language:
+            userContext[
+              'Which language would you like the story to be in'
+            ]?.toLowerCase(),
+          world: cleanValue(
+            userContext['What kind of world should the story happen in?']
+          ),
+          lesson: cleanValue(
+            userContext['What should the story teach or focus on?']
+          ),
+          mood: cleanValue(userContext['What mood should the story have?']),
         };
 
         try {

@@ -1,6 +1,8 @@
 # Kidlytics: AI-Powered Story Generator for Kids
 
-kidlytics is an Angular-based web application that leverages the power of Google Cloud's Vertex AI to generate engaging and personalized stories for children. By answering a series of fun questions, parents and educators can create unique, illustrated stories tailored to a child's interests and learning goals, all orchestrated by the Genkit framework.
+![Kidlytics Demo](./public/Kidlytics-Demo.gif)
+
+Kidlytics is a web application that leverages the power of Google Cloud's Vertex AI to generate engaging and personalized stories for children. By answering a series of fun questions, parents and educators can create unique, illustrated stories tailored to a child's interests and learning goals, all orchestrated by the Genkit framework.
 
 ## Table of Contents
 
@@ -55,22 +57,25 @@ Follow these steps to get a local copy of the project up and running on your mac
 - A [Google Cloud](https://cloud.google.com/) account with an active billing account.
 - The [Google Cloud SDK (`gcloud` CLI)](https://cloud.google.com/sdk/docs/install) installed and configured on your machine.
 
+Before you begin, make sure you are logged into the Firebase CLI:
+```bash
+firebase login
+```
+
 ### 1. Clone the Repository
 
-````bash
+```bash
 git clone https://github.com/your-username/kidlytics.git
-cd kidlytics```
+cd kidlytics
+```
 
 ### 2. Install Dependencies
 
-Install the necessary npm packages for both the root project and the functions directory:
+Install the necessary npm packages for both the root project and the functions directory in a single step:
 
 ```bash
-npm install
-cd functions
-npm install
-cd ..
-````
+npm install && (cd functions && npm install)
+```
 
 ### 3. Set Up Google Cloud & Firebase
 
@@ -94,10 +99,10 @@ This project uses Google Cloud for AI services and Firebase for the database and
       gcloud auth application-default login
       ```
     - Set your active project to the one you just created. This ensures all subsequent `gcloud` and SDK commands target the correct project.
-      ````bash
+      ```bash
       gcloud config set project YOUR_PROJECT_ID
-      ```        (Replace `YOUR_PROJECT_ID` with the ID from step 1).
-      ````
+      ```
+      (Replace `YOUR_PROJECT_ID` with the ID from step 1).
 
 4.  **Set Up Firebase:**
     - Go to the [Firebase Console](https://console.firebase.google.com/) and click "**Add project**".
@@ -158,10 +163,12 @@ The `functions` directory contains serverless functions that require their own e
 
 ### 5. Deploy Firebase Functions
 
-Before running the application, you need to deploy the Firebase Functions.
+Before running the application, you need to build and deploy the Firebase Functions.
 
 ```bash
-# Make sure you are in the root directory of the project
+# Make sure you are in the functions directory
+cd functions
+npm run build
 firebase deploy --only functions
 ```
 
@@ -173,7 +180,7 @@ Now you can start the Angular development server.
 
 ```bash
 # In one terminal, run the Angular dev server
-ng serve
+npm start
 ```
 
 Open your browser and navigate to `http://localhost:4200/`.
@@ -218,11 +225,10 @@ Here is an overview of the key files and directories in the project:
 1.  **User Input**: The user answers a series of questions within the Angular app.
 2.  **Rate Limiting**: Before generating a story, the app calls the `rateLimiter` Firebase Function to check if the user has reached their limit.
 3.  **API Call**: If allowed, the frontend sends the answers to the backend Express server.
-4.  **Genkit Orchestration**: The server triggers a Genkit flow (`storyGenerationFlow`).
-5.  **AI Story Generation**: This flow makes a call to a **Gemini model hosted on Vertex AI** to generate the story text and prompts for illustrations.
-6.  **AI Image Generation**: For each story part, another Genkit flow calls an **image generation model (e.g., Imagen) on Vertex AI** to create a picture.
-7.  **Storing the Story**: The complete story, including the text and image data, is saved to Firebase Firestore.
-8.  **Displaying the Story**: The user is given a link to a page where they can view the newly generated story with its illustrations.
+4.  **Genkit Orchestration**: The server triggers the `storyGenerationFlow`.
+5.  **AI Story and Image Generation**: This flow calls the **Gemini model on Vertex AI** to generate the story text and then uses the **Imagen model on Vertex AI** to create illustrations for each part of the story.
+6.  **Storing the Story**: The complete story, including the text and image data, is saved to Firebase Firestore.
+7.  **Displaying the Story**: The user is given a link to a page where they can view the newly generated story with its illustrations.
 
 ## Contributing
 

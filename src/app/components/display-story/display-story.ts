@@ -23,8 +23,12 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
-import { TextToSpeech } from '../../services/text-to-speech';
+import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
+
+import { catchError, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
+import { generateStoryPdf } from '../../utils/pdfGenertor';
 
 @Component({
   selector: 'app-display-story',
@@ -75,9 +79,6 @@ export class DisplayStory implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute, private meta: Meta) {}
 
   ngOnInit(): void {
-    window.addEventListener('beforeprint', this.beforePrint);
-    window.addEventListener('afterprint', this.afterPrint);
-
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -108,6 +109,43 @@ export class DisplayStory implements OnInit, OnDestroy {
 
           // Preload all images
           this.preloadAllImages();
+
+          console.log('here');
+          this.tts
+            .getAudioFromText(this.storyParts().map((v) => v.content))
+            .pipe(
+              catchError((err) => {
+                console.error('Failed to get audio:', err);
+                return of(null); // or throwError(() => err) if you want it to propagate
+              })
+            )
+            .subscribe((audioBase64) => {
+              if (!audioBase64) return;
+
+              const audioUrls: string[] = audioBase64.data.map(
+                (data: TTSResponseItem) => {
+                  const { base64 } = data;
+                  const base64Data = base64.includes(',')
+                    ? base64.split(',')[1]
+                    : base64;
+
+                  // Decode base64 to binary
+                  const binary = atob(base64Data);
+                  const bytes = new Uint8Array(binary.length);
+
+                  for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                  }
+
+                  // Create blob and object URL
+                  const blob = new Blob([bytes], { type: 'audio/wav' });
+                  return URL.createObjectURL(blob);
+                }
+              );
+
+              this.storyAudio.set(audioUrls);
+              console.log(this.storyAudio());
+            });
 
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
@@ -179,8 +217,6 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('beforeprint', this.beforePrint);
-    window.removeEventListener('afterprint', this.afterPrint);
     this.speakingSignal.set(false);
   }
 
@@ -257,6 +293,10 @@ export class DisplayStory implements OnInit, OnDestroy {
     });
   }
 
+  checkFeedbackSubmitted(): boolean {
+    return localStorage.getItem('feedbackSubmitted')?.includes('true') || false;
+  }
+
   modifyIndex(newIndex: number): void {
     this.currentIndex.set(newIndex);
   }
@@ -265,16 +305,13 @@ export class DisplayStory implements OnInit, OnDestroy {
     return window.location.href;
   }
 
-  print(): void {
-    // Manually trigger the printing state to ensure the print view is rendered
-    this.isPrinting.set(true);
-
-    // Use a timeout to allow Angular to render the print view before the print dialog opens.
-    // This helps prevent race conditions. The `afterprint` event will handle
-    // setting `isPrinting` back to false.
-    setTimeout(() => {
-      window.print();
-    }, 100);
+  async print(): Promise<void> {
+    let storyData = [...this.storyParts()];
+    storyData = storyData.map((v, i) => ({
+      content: v.content,
+      imageUri: this.preloadedImages()[i]?.src || '',
+    }));
+    await generateStoryPdf(this.storyTitle(), storyData);
   }
 
   handleSpeech(shouldSpeak: boolean) {

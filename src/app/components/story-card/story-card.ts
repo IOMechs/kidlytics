@@ -51,6 +51,8 @@ export class StoryCard {
   toggleSpeaking = output<boolean>();
   shouldSpeak = input<boolean>();
 
+  audioSrc = signal<string>('');
+
   onImageLoad(): void {
     this.imageLoaded.set(true);
   }
@@ -89,6 +91,7 @@ export class StoryCard {
   @ViewChild('myAudio') audioRef!: ElementRef<HTMLAudioElement>;
 
   playAudio() {
+    console.log(this.audioRef.nativeElement.currentSrc);
     this.audioRef.nativeElement.play();
     this.toggleSpeaking.emit(true);
   }
