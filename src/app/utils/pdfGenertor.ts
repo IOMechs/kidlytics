@@ -36,7 +36,6 @@ export async function generateStoryPdf(
       pdf.setTextColor(248, 248, 242); // Dracula foreground
       pdf.text(title, 105, 20, { align: 'center' });
     }
-    console.log(pdf.getFontList());
 
     // Add image
     const imageBase64 = await toBase64(part.imageUri);
