@@ -17,8 +17,8 @@ export const storyGenerationFlow = ai.defineFlow(
     name: 'storyGenerationFlow',
     inputSchema: z.object({ userContext: z.string() }),
     outputSchema: z.object({
-      title: z.string(),
-      parts: z.array(
+      name: z.string(),
+      storyParts: z.array(
         z.object({
           content: z.string(),
           imagePrompt: z
@@ -67,8 +67,8 @@ export const storyGenerationFlow = ai.defineFlow(
 `,
         output: {
           schema: z.object({
-            title: z.string(),
-            parts: z.array(
+            name: z.string(),
+            storyParts: z.array(
               z.object({
                 content: z.string().describe('nth Part of the story'),
                 imagePrompt: z

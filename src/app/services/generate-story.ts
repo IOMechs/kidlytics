@@ -93,11 +93,13 @@ export class GenerateStory {
 
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
-        storyName = story.title;
+        storyName = story.name;
         userPrompt = userContext;
         ageGroup = story.ageGroup;
         language = story.language;
-        return from(story.parts.map((part, index) => ({ ...part, index })));
+        return from(
+          story.storyParts.map((part, index) => ({ ...part, index }))
+        );
       }),
       concatMap((partObj) => {
         let imagePromptWithContext = `Current Scene Prompt: ${partObj.imagePrompt}
