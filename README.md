@@ -12,6 +12,7 @@ Kidlytics is a web application that leverages the power of Google Cloud's Vertex
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [1. Clone the Repository](#1-clone-the-repository)
+    - [2. Install Dependencies](#2-install-dependencies)
     - [3. Set Up Google Cloud \& Firebase](#3-set-up-google-cloud--firebase)
     - [4. Configure Environment Variables](#4-configure-environment-variables)
       - [4.1. Angular Application (Root)](#41-angular-application-root)
@@ -179,7 +180,7 @@ Now you can start the Angular development server.
 
 ```bash
 # In one terminal, run the Angular dev server
-ng serve
+npm start
 ```
 
 Open your browser and navigate to `http://localhost:4200/`.
