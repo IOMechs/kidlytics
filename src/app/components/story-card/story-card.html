@@ -20,7 +20,7 @@
       <div class="skeleton w-full h-full"></div>
       }
     </figure>
-    @if(audioPart()){
+    @if(language()=='english' && audioPart()){
 
     <audio #myAudio [src]="audioPart()" preload="auto" (ended)="stop()"></audio>
 

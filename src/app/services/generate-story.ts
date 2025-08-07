@@ -75,6 +75,7 @@ export class GenerateStory {
     let ageGroup = '5+';
     let prevImgBaseUrl = '';
     let prevImgPrompt = '';
+    let language = '';
     let seed = Math.floor(Math.random() * 10);
 
     const cleanValue = (str: string | undefined): string | undefined => {
@@ -95,6 +96,7 @@ export class GenerateStory {
         storyName = story.title;
         userPrompt = userContext;
         ageGroup = story.ageGroup;
+        language = story.language;
         return from(story.parts.map((part, index) => ({ ...part, index })));
       }),
       concatMap((partObj) => {
@@ -110,6 +112,8 @@ export class GenerateStory {
           - Ensure the image is suitable for children aged ${ageGroup} and does not contain any inappropriate content.
           - The image should be colorful, engaging, and visually appealing to children.
           - The image should be suitable for a story about ${storyName}.
+          - MOST IMPORTANT INSTRUCTION : Deeply analyze the reference image provided to you, make sure each character in the new image looks exactly the same as it does in previous image if it is there, because both are the scenes of the same story .
+          - The given image was generated against this prompt : ${prevImgPrompt}
 `;
         return this.generateImage(
           {
@@ -145,7 +149,9 @@ export class GenerateStory {
           userPrompt,
           ageGroup,
           language:
-            userContext['Which language would you like the story to be in']?.toLowerCase(),
+            userContext[
+              'Which language would you like the story to be in'
+            ]?.toLowerCase(),
           world: cleanValue(
             userContext['What kind of world should the story happen in?']
           ),

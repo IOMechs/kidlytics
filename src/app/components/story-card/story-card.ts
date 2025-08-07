@@ -37,6 +37,8 @@ export class StoryCard {
   isLoading = input<boolean>();
   currentIndex = input<number>(0);
 
+  language = input<string>('');
+
   currentImage = input<string>('');
   currentStoryPart = input<StoryPartWithImg>({
     content: '',
@@ -62,18 +64,8 @@ export class StoryCard {
     this.nextCard();
   }
 
-  @HostListener('swipeleft')
-  handleSwipeLeft() {
-    this.nextCard();
-  }
-
   @HostListener('window:keydown.arrowleft')
   handleKeyLeft() {
-    this.prevCard();
-  }
-
-  @HostListener('swiperight')
-  handleSwipeRight() {
     this.prevCard();
   }
 
@@ -112,6 +104,10 @@ export class StoryCard {
   }
 
   stop(): void {
-    this.toggleSpeaking.emit(false);
+    if (this.currentIndex() >= this.storyLength() - 1) {
+      this.toggleSpeaking.emit(false);
+    } else {
+      setTimeout(() => this.nextCard(), 1000);
+    }
   }
 }
