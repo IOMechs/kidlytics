@@ -28,6 +28,7 @@ export const storyGenerationFlow = ai.defineFlow(
             ),
         })
       ),
+      language: z.string(),
       ageGroup: z.string(),
     }),
   },
@@ -55,7 +56,7 @@ export const storyGenerationFlow = ai.defineFlow(
           - In each Image Prompt , make sure visual attributes of each character and object is specified and attributes of one character or object must remain same across all story parts
           - Even if the story content is in some other content write the image prompt in English only
           - Also, provide the idead age group for this story e.g. 5+
-
+          - If the language of the story is specified, make sure the story is in that language strictly
           ---
 
           ## 🔐 INPUT (provided as JSON):
@@ -77,6 +78,11 @@ export const storyGenerationFlow = ai.defineFlow(
                   ),
               })
             ),
+            language: z
+              .string()
+              .describe(
+                "The language of the story. Please include full name of the language e.g. 'English'"
+              ),
             ageGroup: z
               .string()
               .describe('Age group for which this story is ideal'),

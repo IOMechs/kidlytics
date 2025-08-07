@@ -75,12 +75,14 @@ export class GenerateStory {
     let ageGroup = '5+';
     let prevImgBaseUrl = '';
     let prevImgPrompt = '';
+    let language = '';
     let seed = Math.floor(Math.random() * 10);
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
         storyName = story.title;
         userPrompt = userContext;
         ageGroup = story.ageGroup;
+        language = story.language;
         return from(story.parts.map((part, index) => ({ ...part, index })));
       }),
       concatMap((partObj) => {
@@ -132,6 +134,7 @@ export class GenerateStory {
           createdAt: new Date(),
           userPrompt,
           ageGroup,
+          language,
         };
 
         try {

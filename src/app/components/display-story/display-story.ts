@@ -56,6 +56,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   isPrinting = signal(false);
   speakingSignal = signal(false);
   storyAudio = signal<string[]>([]);
+  storyLanguage = signal<string>('');
 
   testimonialDialog = inject(MatDialog);
 
@@ -101,6 +102,7 @@ export class DisplayStory implements OnInit, OnDestroy {
             'Generated On': this.formatDate(data['createdAt']),
           });
           this.ageGroup.set(data['ageGroup'] || '5+');
+          this.storyLanguage.set(data['language']);
           // Initialize image loaded states
           this.imagesLoaded.set(Array(data['storyParts'].length).fill(false));
 
@@ -153,17 +155,19 @@ export class DisplayStory implements OnInit, OnDestroy {
               content: data['storyParts'][0].imageUri || '',
             },
           ]);
-
-          this.tts
-            .getAudioFromText(this.storyParts().map((v) => v.content))
-            .subscribe((audioBase64) => {
-              console.log(audioBase64.data);
-              let audioArr: string[] = [];
-              audioBase64.data.map((v) => {
-                audioArr.push(v.base64);
+          console.log(data['language']?.toLowerCase()?.trim() === 'english');
+          if (data['language']?.toLowerCase()?.trim() === 'english') {
+            this.tts
+              .getAudioFromText(this.storyParts().map((v) => v.content))
+              .subscribe((audioBase64) => {
+                console.log(audioBase64.data);
+                let audioArr: string[] = [];
+                audioBase64.data.map((v) => {
+                  audioArr.push(v.base64);
+                });
+                this.storyAudio.set(audioArr);
               });
-              this.storyAudio.set(audioArr);
-            });
+          }
         }
       } catch (err) {
         console.error(err);
