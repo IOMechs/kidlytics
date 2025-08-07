@@ -32,6 +32,7 @@
     "@genkit-ai/express": "^1.13.0",
     "@genkit-ai/googleai": "^1.13.0",
     "@genkit-ai/vertexai": "^1.14.0",
+    "@google/genai": "^1.13.0",
     "@tailwindcss/postcss": "^4.1.10",
     "@types/langdetect": "^0.2.2",
     "axios": "^1.11.0",
