@@ -60,18 +60,8 @@ export class StoryCard {
     this.nextCard();
   }
 
-  @HostListener('swipeleft')
-  handleSwipeLeft() {
-    this.nextCard();
-  }
-
   @HostListener('window:keydown.arrowleft')
   handleKeyLeft() {
-    this.prevCard();
-  }
-
-  @HostListener('swiperight')
-  handleSwipeRight() {
     this.prevCard();
   }
 
