@@ -8,8 +8,14 @@ import { TopStoriesComponent } from '../components/top-stories/top-stories';
 
 @Component({
   selector: 'app-home',
-  imports: [HeroSection, WhyChoose, HowItWorks, TopStoriesComponent, Testimonials, CallToAction],
+  imports: [
+    HeroSection,
+    WhyChoose,
+    HowItWorks,
+    TopStoriesComponent,
+    Testimonials,
+    CallToAction,
+  ],
   templateUrl: './home.html',
-  styleUrl: './home.css',
 })
 export class Home {}
