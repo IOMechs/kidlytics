@@ -101,7 +101,11 @@ export const storyGenerationFlow = ai.defineFlow(
 );
 
 const blueprintOutputSchema = z.object({
-  'Who is this story for?': z.string(),
+  'Who is this story for?': z
+    .string()
+    .describe(
+      'If the name of the person is giving, design the story for him/her'
+    ),
   'What is their age group': z.enum([
     '1-5 years',
     '6-10 years',
