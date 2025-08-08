@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Inject,
+  PLATFORM_ID,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -14,6 +21,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Testimonial } from '../../../services/testimonial';
+
 @Component({
   selector: 'app-dialog-box',
   imports: [
@@ -35,7 +43,10 @@ export class TestimonialDialog {
   feedbackForm: FormGroup;
   ratings = [1, 2, 3, 4, 5];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
     this.feedbackForm = this.fb.group({
       name: ['', Validators.required],
       rating: [
@@ -60,7 +71,9 @@ export class TestimonialDialog {
         await this.testimonialService.uploadTestimonial(
           this.feedbackForm.value
         );
-        localStorage.setItem('feedbackSubmitted', 'true');
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.setItem('feedbackSubmitted', 'true');
+        }
       } catch (e) {
         console.log(e);
       }

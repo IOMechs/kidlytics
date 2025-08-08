@@ -15,6 +15,7 @@ import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { importProvidersFrom, isDevMode } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { provideServiceWorker } from '@angular/service-worker';
+import { StoryMetaResolver } from './services/story-meta.resolver';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
     importProvidersFrom(MatDialogModule, MatIconModule),
+    StoryMetaResolver,
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

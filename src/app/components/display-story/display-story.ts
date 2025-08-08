@@ -16,7 +16,9 @@ import {
   inject,
   Inject,
   OnDestroy,
+  PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import {
   MatDialog,
   MatDialogModule,
@@ -76,9 +78,57 @@ export class DisplayStory implements OnInit, OnDestroy {
   readonly dialog = inject(MatDialog);
   private tts = inject(TextToSpeech);
 
-  constructor(private route: ActivatedRoute, private meta: Meta) {}
+  constructor(
+    private route: ActivatedRoute,
+    private meta: Meta,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
+    // Check if we're on server-side and have resolved data
+    if (isPlatformServer(this.platformId)) {
+      // On server-side, the resolver has already set meta tags
+      // We can skip the heavy client-side operations
+      return;
+    }
+
+    // On client-side, always load the data
+    this.loadStoryData();
+  }
+
+  private loadStoryData(): void {
+    // Check if we have resolved data from the server
+    this.route.data.subscribe((data) => {
+      if (data['storyData']) {
+        // Use the resolved data from server
+        const storyData = data['storyData'];
+        this.storyParts.set(storyData['storyParts']);
+        this.storyTitle.set(storyData['name']);
+        this.userPrompt.set({
+          ...storyData['userPrompt'],
+          'Generated On': this.formatDate(storyData['createdAt']),
+        });
+        this.ageGroup.set(storyData['ageGroup'] || '5+');
+        this.storyLanguage.set(storyData['language']);
+        this.imagesLoaded.set(
+          Array(storyData['storyParts'].length).fill(false)
+        );
+        this.preloadAllImages();
+        this.prepareModalContent();
+        this.isLoading.set(false);
+
+        // Load audio if it's English
+        if (storyData['language']?.toLowerCase()?.trim() === 'english') {
+          this.loadAudio(storyData['storyParts']);
+        }
+      } else {
+        // Fallback to loading from query params
+        this.loadFromQueryParams();
+      }
+    });
+  }
+
+  private loadFromQueryParams(): void {
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -111,101 +161,10 @@ export class DisplayStory implements OnInit, OnDestroy {
           this.preloadAllImages();
 
           console.log('here');
-          this.tts
-            .getAudioFromText(this.storyParts().map((v) => v.content))
-            .pipe(
-              catchError((err) => {
-                console.error('Failed to get audio:', err);
-                return of(null); // or throwError(() => err) if you want it to propagate
-              })
-            )
-            .subscribe((audioBase64) => {
-              if (!audioBase64) return;
-
-              const audioUrls: string[] = audioBase64.data.map(
-                (data: TTSResponseItem) => {
-                  const { base64 } = data;
-                  const base64Data = base64.includes(',')
-                    ? base64.split(',')[1]
-                    : base64;
-
-                  // Decode base64 to binary
-                  const binary = atob(base64Data);
-                  const bytes = new Uint8Array(binary.length);
-
-                  for (let i = 0; i < binary.length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
-                  }
-
-                  // Create blob and object URL
-                  const blob = new Blob([bytes], { type: 'audio/wav' });
-                  return URL.createObjectURL(blob);
-                }
-              );
-
-              this.storyAudio.set(audioUrls);
-              console.log(this.storyAudio());
-            });
+          this.loadAudio(data['storyParts']);
 
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
-
-          this.meta.removeTag('property="og:title"');
-          this.meta.removeTag('property="og:description"');
-          this.meta.removeTag('property="og:image"');
-          this.meta.removeTag('property="og:url"');
-          this.meta.removeTag('property="og:type"');
-          this.meta.removeTag('name="twitter:card"');
-          this.meta.removeTag('name="twitter:title"');
-          this.meta.removeTag('name="twitter:description"');
-          this.meta.removeTag('name="twitter:image"');
-
-          // Add basic meta description
-          this.meta.updateTag({
-            name: 'description',
-            content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-          });
-
-          // Add Open Graph / Facebook meta tags
-          this.meta.addTags([
-            { property: 'og:title', content: this.storyTitle() },
-            {
-              property: 'og:description',
-              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-            },
-            {
-              property: 'og:image',
-              content: data['storyParts'][0].imageUri || '',
-            },
-            { property: 'og:type', content: 'article' },
-          ]);
-
-          // Add Twitter meta tags
-          this.meta.addTags([
-            { name: 'twitter:card', content: 'summary_large_image' },
-            { name: 'twitter:title', content: this.storyTitle() },
-            {
-              name: 'twitter:description',
-              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-            },
-            {
-              name: 'twitter:image',
-              content: data['storyParts'][0].imageUri || '',
-            },
-          ]);
-          console.log(data['language']?.toLowerCase()?.trim() === 'english');
-          if (data['language']?.toLowerCase()?.trim() === 'english') {
-            this.tts
-              .getAudioFromText(this.storyParts().map((v) => v.content))
-              .subscribe((audioBase64) => {
-                console.log(audioBase64.data);
-                let audioArr: string[] = [];
-                audioBase64.data.map((v) => {
-                  audioArr.push(v.base64);
-                });
-                this.storyAudio.set(audioArr);
-              });
-          }
         }
       } catch (err) {
         console.error(err);
@@ -214,6 +173,44 @@ export class DisplayStory implements OnInit, OnDestroy {
         this.isLoading.set(false);
       }
     });
+  }
+
+  private loadAudio(storyParts: StoryPartWithImg[]): void {
+    this.tts
+      .getAudioFromText(storyParts.map((v) => v.content))
+      .pipe(
+        catchError((err) => {
+          console.error('Failed to get audio:', err);
+          return of(null);
+        })
+      )
+      .subscribe((audioBase64) => {
+        if (!audioBase64) return;
+
+        const audioUrls: string[] = audioBase64.data.map(
+          (data: TTSResponseItem) => {
+            const { base64 } = data;
+            const base64Data = base64.includes(',')
+              ? base64.split(',')[1]
+              : base64;
+
+            // Decode base64 to binary
+            const binary = atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+
+            for (let i = 0; i < binary.length; i++) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+
+            // Create blob and object URL
+            const blob = new Blob([bytes], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+          }
+        );
+
+        this.storyAudio.set(audioUrls);
+        console.log(this.storyAudio());
+      });
   }
 
   ngOnDestroy(): void {
@@ -286,6 +283,9 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   checkFeedbackSubmitted(): boolean {
+    if (isPlatformServer(this.platformId)) {
+      return false;
+    }
     return localStorage.getItem('feedbackSubmitted')?.includes('true') || false;
   }
 
