@@ -1,0 +1,38 @@
+<section class="py-12 px-6 bg-base-100">
+  <h2 class="text-center text-3xl font-bold mb-10 w-auto">Featured Stories</h2>
+
+  <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    @if (featuredStories().length > 0) { @for (story of featuredStories(); track
+    story.id) {
+    <div class="card bg-base-200 shadow-xl h-full min-h-48">
+      <figure class="relative aspect-video overflow-hidden">
+        <img
+          [src]="story.firstImage"
+          alt="{{ story.name }}"
+          class="absolute inset-0 w-full h-full object-cover"
+        />
+      </figure>
+      <div class="card-body text-center items-center">
+        <h3 class="card-title text-lg h-16 text-white">{{ story.name }}</h3>
+        <a
+          class="btn btn-primary mt-4"
+          [routerLink]="'/viewStory'"
+          [queryParams]="{ id: story.id }"
+        >
+          Read Story
+        </a>
+      </div>
+    </div>
+    } } @else { @for (_ of [1, 2, 3]; track _) {
+    <div class="card bg-base-200 shadow-xl h-full min-h-48 animate-pulse">
+      <figure class="h-48 bg-base-300">
+        <div class="skeleton w-full h-full"></div>
+      </figure>
+      <div class="card-body text-center items-center space-y-4">
+        <div class="skeleton h-6 w-3/4"></div>
+        <div class="skeleton h-10 w-24"></div>
+      </div>
+    </div>
+    } }
+  </div>
+</section>
