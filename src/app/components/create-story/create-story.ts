@@ -146,6 +146,7 @@ export class CreateStory {
 
   confirmAndGenerate() {
     // `this.answers` is already populated from the blueprint
+
     this.submitAnswers();
   }
 
@@ -184,6 +185,10 @@ export class CreateStory {
   submitAnswers = async () => {
     this.loading.set(true);
 
+    this.answerToQuestions.setControl(
+      'Initial Prompt',
+      new FormControl(this.initialStoryPrompt())
+    );
     this.storyLimitService
       .checkLimit()
       .pipe(
