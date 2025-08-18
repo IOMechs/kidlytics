@@ -206,10 +206,9 @@ app.post(
 
       // Use the first available voice
       const voice = englishVoices[0];
-      console.log(`Using voice: ${voice.FriendlyName}`);
+
       const results = await Promise.all(
         content.map(async (text: string, index: number) => {
-          console.log(text);
           const result = await tts.synthesize(text, voice.ShortName, {
             rate: -10,
             volume: 0,

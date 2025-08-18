@@ -88,64 +88,76 @@ export class DisplayStory implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // if (isPlatformServer(this.platformId)) {
-    //   this.storyService.getStory('-O-pDA9ySg3xIe2zTURI').subscribe((storyData) => {
-    //     this.storyParts.set(storyData.storyParts);
-    //     this.storyTitle.set(storyData.name);
-    //     this.userPrompt.set({
-    //       ...storyData.userPrompt,
-    //       'Generated On': this.formatDate(storyData.createdAt),
-    //     });
-    //     this.ageGroup.set(storyData.ageGroup || '5+');
-    //     this.storyLanguage.set(storyData.language);
-    //     this.imagesLoaded.set(Array(storyData.storyParts.length).fill(false));
-    //     this.storyAudio.set(Array(storyData.storyParts.length).fill(''));
-    //     this.preloadAllImages();
-    //     this.prepareModalContent();
-    //     this.isLoading.set(false);
+    let id: string = '';
+    this.route.queryParams.subscribe(async (params) => {
+      id = params['id'];
+      if (id === '' || !id) {
+        this.error.set('No story ID found in URL.');
+        this.isLoading.set(false);
+        return;
+      }
+    });
+    if (isPlatformServer(this.platformId)) {
+      this.storyService.getStory(id).subscribe((storyData) => {
+        // this.storyParts.set(storyData.storyParts);
+        // this.storyTitle.set(storyData.name);
+        // this.userPrompt.set({
+        //   ...storyData.userPrompt,
+        //   'Generated On': this.formatDate(storyData.createdAt),
+        // });
+        // this.ageGroup.set(storyData.ageGroup || '5+');
+        // this.storyLanguage.set(storyData.language);
+        // this.imagesLoaded.set(Array(storyData.storyParts.length).fill(false));
+        // this.storyAudio.set(Array(storyData.storyParts.length).fill(''));
+        // this.preloadAllImages();
+        // this.prepareModalContent();
+        this.isLoading.set(false);
 
-    //     const storyTitle = storyData.name || 'Story';
-    //     const storyContent =
-    //       storyData.storyParts?.[0]?.content ||
-    //       'A wonderful story for children';
-    //     const ageGroup = storyData.ageGroup || '5+';
-    //     const language = storyData.language || 'English';
+        const storyTitle = storyData.name || 'Story';
+        const storyContent =
+          storyData.storyParts?.[0]?.content ||
+          'A wonderful story for children';
+        const ageGroup = storyData.ageGroup || '5+';
+        const language = storyData.language || 'English';
 
-    //     this.title.setTitle(`${storyTitle} - Kidlytics`);
+        this.title.setTitle(`${storyTitle} - Kidlytics`);
 
-    //     this.meta.updateTag({ property: 'og:title', content: storyTitle });
-    //     this.meta.updateTag({
-    //       property: 'og:description',
-    //       content: storyContent,
-    //     });
-    //     this.meta.updateTag({ property: 'og:type', content: 'article' });
+        this.meta.updateTag({ property: 'og:title', content: storyTitle });
+        this.meta.updateTag({
+          property: 'og:description',
+          content: storyContent,
+        });
+        this.meta.updateTag({ property: 'og:type', content: 'article' });
 
-    //     const baseUrl = 'https://kidlytics.firebaseapp.com';
-    //     this.meta.updateTag({
-    //       property: 'og:url',
-    //       content: `${baseUrl}/viewStory?id=-O-pDA9ySg3xIe2zTURI`,
-    //     });
+        const baseUrl = 'https://kidlytics.firebaseapp.com';
+        this.meta.updateTag({
+          property: 'og:url',
+          content: `${baseUrl}/viewStory?id=-O-pDA9ySg3xIe2zTURI`,
+        });
 
-    //     this.meta.updateTag({
-    //       name: 'twitter:card',
-    //       content: 'summary_large_image',
-    //     });
-    //     this.meta.updateTag({ name: 'twitter:title', content: storyTitle });
-    //     this.meta.updateTag({
-    //       name: 'twitter:description',
-    //       content: storyContent,
-    //     });
+        this.meta.updateTag({
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        });
+        this.meta.updateTag({ name: 'twitter:title', content: storyTitle });
+        this.meta.updateTag({
+          name: 'twitter:description',
+          content: storyContent,
+        });
 
-    //     this.meta.updateTag({ name: 'description', content: storyContent });
-    //     this.meta.updateTag({
-    //       name: 'keywords',
-    //       content: `children story, ${ageGroup}, ${language}`,
-    //     });
+        this.meta.updateTag({ name: 'description', content: storyContent });
+        this.meta.updateTag({
+          name: 'keywords',
+          content: `children story, ${ageGroup}, ${language}`,
+        });
 
-    //     this.meta.updateTag({ property: 'og:site_name', content: 'Kidlytics' });
-    //   });
-    //   return;
-    // }
+        this.meta.updateTag({
+          property: 'og:site_name',
+          content: 'Kidlytics',
+        });
+      });
+      return;
+    }
     if (isPlatformBrowser(this.platformId)) {
       this.loadFromQueryParams();
     }
