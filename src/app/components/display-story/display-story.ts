@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   OnInit,
@@ -24,13 +24,14 @@ import {
   MatDialogModule,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { Meta } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
 
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 import { generateStoryPdf } from '../../utils/pdfGenertor';
+import { StoryService } from '../../services/story.service';
 
 @Component({
   selector: 'app-display-story',
@@ -77,55 +78,77 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   readonly dialog = inject(MatDialog);
   private tts = inject(TextToSpeech);
+  private storyService = inject(StoryService);
 
   constructor(
     private route: ActivatedRoute,
     private meta: Meta,
+    private title: Title,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    // Check if we're on server-side and have resolved data
-    if (isPlatformServer(this.platformId)) {
-      // On server-side, the resolver has already set meta tags
-      // We can skip the heavy client-side operations
-      return;
+    // if (isPlatformServer(this.platformId)) {
+    //   this.storyService.getStory('-O-pDA9ySg3xIe2zTURI').subscribe((storyData) => {
+    //     this.storyParts.set(storyData.storyParts);
+    //     this.storyTitle.set(storyData.name);
+    //     this.userPrompt.set({
+    //       ...storyData.userPrompt,
+    //       'Generated On': this.formatDate(storyData.createdAt),
+    //     });
+    //     this.ageGroup.set(storyData.ageGroup || '5+');
+    //     this.storyLanguage.set(storyData.language);
+    //     this.imagesLoaded.set(Array(storyData.storyParts.length).fill(false));
+    //     this.storyAudio.set(Array(storyData.storyParts.length).fill(''));
+    //     this.preloadAllImages();
+    //     this.prepareModalContent();
+    //     this.isLoading.set(false);
+
+    //     const storyTitle = storyData.name || 'Story';
+    //     const storyContent =
+    //       storyData.storyParts?.[0]?.content ||
+    //       'A wonderful story for children';
+    //     const ageGroup = storyData.ageGroup || '5+';
+    //     const language = storyData.language || 'English';
+
+    //     this.title.setTitle(`${storyTitle} - Kidlytics`);
+
+    //     this.meta.updateTag({ property: 'og:title', content: storyTitle });
+    //     this.meta.updateTag({
+    //       property: 'og:description',
+    //       content: storyContent,
+    //     });
+    //     this.meta.updateTag({ property: 'og:type', content: 'article' });
+
+    //     const baseUrl = 'https://kidlytics.firebaseapp.com';
+    //     this.meta.updateTag({
+    //       property: 'og:url',
+    //       content: `${baseUrl}/viewStory?id=-O-pDA9ySg3xIe2zTURI`,
+    //     });
+
+    //     this.meta.updateTag({
+    //       name: 'twitter:card',
+    //       content: 'summary_large_image',
+    //     });
+    //     this.meta.updateTag({ name: 'twitter:title', content: storyTitle });
+    //     this.meta.updateTag({
+    //       name: 'twitter:description',
+    //       content: storyContent,
+    //     });
+
+    //     this.meta.updateTag({ name: 'description', content: storyContent });
+    //     this.meta.updateTag({
+    //       name: 'keywords',
+    //       content: `children story, ${ageGroup}, ${language}`,
+    //     });
+
+    //     this.meta.updateTag({ property: 'og:site_name', content: 'Kidlytics' });
+    //   });
+    //   return;
+    // }
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadFromQueryParams();
     }
-
-    // On client-side, always load the data
-    this.loadStoryData();
-  }
-
-  private loadStoryData(): void {
-    // Check if we have resolved data from the server
-    this.route.data.subscribe((data) => {
-      if (data['storyData']) {
-        // Use the resolved data from server
-        const storyData = data['storyData'];
-        this.storyParts.set(storyData['storyParts']);
-        this.storyTitle.set(storyData['name']);
-        this.userPrompt.set({
-          ...storyData['userPrompt'],
-          'Generated On': this.formatDate(storyData['createdAt']),
-        });
-        this.ageGroup.set(storyData['ageGroup'] || '5+');
-        this.storyLanguage.set(storyData['language']);
-        this.imagesLoaded.set(
-          Array(storyData['storyParts'].length).fill(false)
-        );
-        this.preloadAllImages();
-        this.prepareModalContent();
-        this.isLoading.set(false);
-
-        // Load audio if it's English
-        if (storyData['language']?.toLowerCase()?.trim() === 'english') {
-          this.loadAudio(storyData['storyParts']);
-        }
-      } else {
-        // Fallback to loading from query params
-        this.loadFromQueryParams();
-      }
-    });
   }
 
   private loadFromQueryParams(): void {
@@ -176,6 +199,7 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   private loadAudio(storyParts: StoryPartWithImg[]): void {
+    console.log(isPlatformBrowser(this.platformId), 'PLatfrom Browser');
     this.tts
       .getAudioFromText(storyParts.map((v) => v.content))
       .pipe(

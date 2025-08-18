@@ -18,7 +18,7 @@ import {
 } from './genkit/storyGenerationFlow';
 import * as dotenv from 'dotenv';
 import axios from 'axios';
-import { EdgeTTS, SynthesisResult } from '@duyquangnvx/edge-tts';
+import { EdgeTTS } from '@andresaya/edge-tts';
 import { ERROR_CODES } from './constants/error.codes';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -52,7 +52,6 @@ const sendError = (
     },
   });
 };
-
 
 const rateLimiter = async (req: Request, res: Response, next: NextFunction) => {
   if (process.env['enableStoryGenerationLimit'] !== 'true') {
@@ -201,16 +200,23 @@ app.post(
       }
 
       const tts = new EdgeTTS();
-      const voice = 'en-US-EmmaNeural';
+      // const voice = 'en-US-EmmaNeural';
+      const englishVoices = await tts.getVoicesByLanguage('en-US');
+      console.log(`Available English voices: ${englishVoices.length}`);
 
+      // Use the first available voice
+      const voice = englishVoices[0];
+      console.log(`Using voice: ${voice.FriendlyName}`);
       const results = await Promise.all(
         content.map(async (text: string, index: number) => {
-          const result: SynthesisResult = await tts.synthesize(text, voice, {
+          console.log(text);
+          const result = await tts.synthesize(text, voice.ShortName, {
             rate: -10,
             volume: 0,
             pitch: 10,
           });
-          const base64Audio = result.toBase64(); // base64 string of mp3
+          const base64Audio = tts.toBase64(); // base64 string of mp3
+          console.log(base64Audio.slice(0, 10));
           return {
             index,
             text,
