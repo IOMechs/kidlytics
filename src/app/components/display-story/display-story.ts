@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   OnInit,
@@ -16,19 +16,22 @@ import {
   inject,
   Inject,
   OnDestroy,
+  PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import {
   MatDialog,
   MatDialogModule,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { Meta } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TextToSpeech, TTSResponseItem } from '../../services/text-to-speech';
 
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 import { generateStoryPdf } from '../../utils/pdfGenertor';
+import { StoryService } from '../../services/story.service';
 
 @Component({
   selector: 'app-display-story',
@@ -75,10 +78,92 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   readonly dialog = inject(MatDialog);
   private tts = inject(TextToSpeech);
+  private storyService = inject(StoryService);
 
-  constructor(private route: ActivatedRoute, private meta: Meta) {}
+  constructor(
+    private route: ActivatedRoute,
+    private meta: Meta,
+    private title: Title,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
+    let id: string = '';
+    this.route.queryParams.subscribe(async (params) => {
+      id = params['id'];
+      if (id === '' || !id) {
+        this.error.set('No story ID found in URL.');
+        this.isLoading.set(false);
+        return;
+      }
+    });
+    if (isPlatformServer(this.platformId)) {
+      this.storyService.getStory(id).subscribe((storyData) => {
+        // this.storyParts.set(storyData.storyParts);
+        // this.storyTitle.set(storyData.name);
+        // this.userPrompt.set({
+        //   ...storyData.userPrompt,
+        //   'Generated On': this.formatDate(storyData.createdAt),
+        // });
+        // this.ageGroup.set(storyData.ageGroup || '5+');
+        // this.storyLanguage.set(storyData.language);
+        // this.imagesLoaded.set(Array(storyData.storyParts.length).fill(false));
+        // this.storyAudio.set(Array(storyData.storyParts.length).fill(''));
+        // this.preloadAllImages();
+        // this.prepareModalContent();
+        this.isLoading.set(false);
+
+        const storyTitle = storyData.name || 'Story';
+        const storyContent =
+          storyData.storyParts?.[0]?.content ||
+          'A wonderful story for children';
+        const ageGroup = storyData.ageGroup || '5+';
+        const language = storyData.language || 'English';
+
+        this.title.setTitle(`${storyTitle} - Kidlytics`);
+
+        this.meta.updateTag({ property: 'og:title', content: storyTitle });
+        this.meta.updateTag({
+          property: 'og:description',
+          content: storyContent,
+        });
+        this.meta.updateTag({ property: 'og:type', content: 'article' });
+
+        const baseUrl = 'https://kidlytics.firebaseapp.com';
+        this.meta.updateTag({
+          property: 'og:url',
+          content: `${baseUrl}/viewStory?id=-O-pDA9ySg3xIe2zTURI`,
+        });
+
+        this.meta.updateTag({
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        });
+        this.meta.updateTag({ name: 'twitter:title', content: storyTitle });
+        this.meta.updateTag({
+          name: 'twitter:description',
+          content: storyContent,
+        });
+
+        this.meta.updateTag({ name: 'description', content: storyContent });
+        this.meta.updateTag({
+          name: 'keywords',
+          content: `children story, ${ageGroup}, ${language}`,
+        });
+
+        this.meta.updateTag({
+          property: 'og:site_name',
+          content: 'Kidlytics',
+        });
+      });
+      return;
+    }
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadFromQueryParams();
+    }
+  }
+
+  private loadFromQueryParams(): void {
     this.route.queryParams.subscribe(async (params) => {
       const id = params['id'];
       if (!id) {
@@ -111,91 +196,10 @@ export class DisplayStory implements OnInit, OnDestroy {
           this.preloadAllImages();
 
           console.log('here');
+          this.loadAudio(data['storyParts']);
 
           // Prepare modal content from userPrompt data
           this.prepareModalContent();
-
-          this.meta.removeTag('property="og:title"');
-          this.meta.removeTag('property="og:description"');
-          this.meta.removeTag('property="og:image"');
-          this.meta.removeTag('property="og:url"');
-          this.meta.removeTag('property="og:type"');
-          this.meta.removeTag('name="twitter:card"');
-          this.meta.removeTag('name="twitter:title"');
-          this.meta.removeTag('name="twitter:description"');
-          this.meta.removeTag('name="twitter:image"');
-
-          // Add basic meta description
-          this.meta.updateTag({
-            name: 'description',
-            content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-          });
-
-          // Add Open Graph / Facebook meta tags
-          this.meta.addTags([
-            { property: 'og:title', content: this.storyTitle() },
-            {
-              property: 'og:description',
-              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-            },
-            {
-              property: 'og:image',
-              content: data['storyParts'][0].imageUri || '',
-            },
-            { property: 'og:type', content: 'article' },
-          ]);
-
-          // Add Twitter meta tags
-          this.meta.addTags([
-            { name: 'twitter:card', content: 'summary_large_image' },
-            { name: 'twitter:title', content: this.storyTitle() },
-            {
-              name: 'twitter:description',
-              content: `${this.storyParts()[0].content.slice(0, 50)}...`,
-            },
-            {
-              name: 'twitter:image',
-              content: data['storyParts'][0].imageUri || '',
-            },
-          ]);
-          console.log(data['language']?.toLowerCase()?.trim() === 'english');
-          if (data['language']?.toLowerCase()?.trim() === 'english') {
-            this.tts
-              .getAudioFromText(this.storyParts().map((v) => v.content))
-              .pipe(
-                catchError((err) => {
-                  console.error('Failed to get audio:', err);
-                  return of(null); // or throwError(() => err) if you want it to propagate
-                })
-              )
-              .subscribe((audioBase64) => {
-                if (!audioBase64) return;
-
-                const audioUrls: string[] = audioBase64.data.map(
-                  (data: TTSResponseItem) => {
-                    const { base64 } = data;
-                    const base64Data = base64.includes(',')
-                      ? base64.split(',')[1]
-                      : base64;
-
-                    // Decode base64 to binary
-                    const binary = atob(base64Data);
-                    const bytes = new Uint8Array(binary.length);
-
-                    for (let i = 0; i < binary.length; i++) {
-                      bytes[i] = binary.charCodeAt(i);
-                    }
-
-                    // Create blob and object URL
-                    const blob = new Blob([bytes], { type: 'audio/wav' });
-                    return URL.createObjectURL(blob);
-                  }
-                );
-
-                this.storyAudio.set(audioUrls);
-                console.log(this.storyAudio());
-              });
-          }
         }
       } catch (err) {
         console.error(err);
@@ -204,6 +208,45 @@ export class DisplayStory implements OnInit, OnDestroy {
         this.isLoading.set(false);
       }
     });
+  }
+
+  private loadAudio(storyParts: StoryPartWithImg[]): void {
+    console.log(isPlatformBrowser(this.platformId), 'PLatfrom Browser');
+    this.tts
+      .getAudioFromText(storyParts.map((v) => v.content))
+      .pipe(
+        catchError((err) => {
+          console.error('Failed to get audio:', err);
+          return of(null);
+        })
+      )
+      .subscribe((audioBase64) => {
+        if (!audioBase64) return;
+
+        const audioUrls: string[] = audioBase64.data.map(
+          (data: TTSResponseItem) => {
+            const { base64 } = data;
+            const base64Data = base64.includes(',')
+              ? base64.split(',')[1]
+              : base64;
+
+            // Decode base64 to binary
+            const binary = atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+
+            for (let i = 0; i < binary.length; i++) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+
+            // Create blob and object URL
+            const blob = new Blob([bytes], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+          }
+        );
+
+        this.storyAudio.set(audioUrls);
+        console.log(this.storyAudio());
+      });
   }
 
   ngOnDestroy(): void {
@@ -276,6 +319,9 @@ export class DisplayStory implements OnInit, OnDestroy {
   }
 
   checkFeedbackSubmitted(): boolean {
+    if (isPlatformServer(this.platformId)) {
+      return false;
+    }
     return localStorage.getItem('feedbackSubmitted')?.includes('true') || false;
   }
 

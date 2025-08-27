@@ -89,3 +89,32 @@ export const validatePasswordAndOverride = functions.https.onRequest(
     });
   }
 );
+
+export const getStoryById = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
+    const { docId } = req.body;
+    if (!docId) {
+      res.status(400).send({ error: 'docId is required.' });
+      return;
+    }
+
+    try {
+      const docRef = db.collection('stories').doc(docId);
+      const doc = await docRef.get();
+
+      if (doc.exists) {
+        res.status(200).send(doc.data());
+      } else {
+        res.status(404).send({ error: 'Story not found.' });
+      }
+    } catch (error) {
+      console.error('Error in getStoryById:', error);
+      res.status(500).send({ error: 'Internal server error.' });
+    }
+  });
+});
