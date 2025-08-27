@@ -99,18 +99,6 @@ export class DisplayStory implements OnInit, OnDestroy {
     });
     if (isPlatformServer(this.platformId)) {
       this.storyService.getStory(id).subscribe((storyData) => {
-        // this.storyParts.set(storyData.storyParts);
-        // this.storyTitle.set(storyData.name);
-        // this.userPrompt.set({
-        //   ...storyData.userPrompt,
-        //   'Generated On': this.formatDate(storyData.createdAt),
-        // });
-        // this.ageGroup.set(storyData.ageGroup || '5+');
-        // this.storyLanguage.set(storyData.language);
-        // this.imagesLoaded.set(Array(storyData.storyParts.length).fill(false));
-        // this.storyAudio.set(Array(storyData.storyParts.length).fill(''));
-        // this.preloadAllImages();
-        // this.prepareModalContent();
         this.isLoading.set(false);
 
         const storyTitle = storyData.name || 'Story';
@@ -127,6 +115,11 @@ export class DisplayStory implements OnInit, OnDestroy {
           property: 'og:description',
           content: storyContent,
         });
+        this.meta.updateTag({
+          property: 'og:image',
+          content: storyData.storyParts?.[0]?.imageUri,
+        });
+
         this.meta.updateTag({ property: 'og:type', content: 'article' });
 
         const baseUrl = 'https://kidlytics.firebaseapp.com';
