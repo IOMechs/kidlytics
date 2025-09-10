@@ -1,7 +1,10 @@
+import axios from "axios";
 import { genkit } from 'genkit';
 import { z } from 'zod';
 import { environment } from '../environments/environment';
 import { vertexAI } from '@genkit-ai/vertexai';
+import { GoogleGenAI } from "@google/genai";
+
 
 const ai = genkit({
   plugins: [
@@ -10,6 +13,10 @@ const ai = genkit({
       projectId: environment.gcpProjectId,
     }),
   ],
+});
+
+const genAi = new GoogleGenAI({
+  apiKey:environment.apiKey
 });
 
 export const storyGenerationFlow = ai.defineFlow(
@@ -184,9 +191,13 @@ Do infer an age group from age (if given in inital prompt) or from other info gi
   }
 );
 
+
+const model = 'gemini-2.5-flash-image-preview';
+
+
 export const imageGenerationFlow = ai.defineFlow(
   {
-    name: 'imageGenerationFlow',
+    name: "imageGenerationFlow",
     inputSchema: z.object({
       imagePrompt: z.string(),
       prevImgUrl: z.string().optional(),
@@ -198,46 +209,74 @@ export const imageGenerationFlow = ai.defineFlow(
   },
   async ({ imagePrompt, prevImgUrl, seed }) => {
     try {
-      const response = await ai.generate({
-        model: vertexAI.model('imagen-3.0-fast-generate-001'),
-        prompt: prevImgUrl
-          ? [
-              { text: imagePrompt },
-              {
-                text: `
-                  This image (to be generated) continues the story from the previously generated image see attached media. However, you have to create a new complete scene (do not include the previous scene).
-                  - Ensure the same characters and objects appear with consistent looks across both images (e.g., facial features, clothing, colors, accessories).
-                  - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.`,
-              },
-              { media: { url: prevImgUrl || '' } },
-            ]
-          : [
-              {
-                text: imagePrompt,
-              },
-            ],
+      const API_ENDPOINT =
+        `https://aiplatform.googleapis.com/v1/projects/${environment.gcpProjectId}/locations/global/publishers/google/models/gemini-2.5-flash-image-preview:generateContent`
 
-        output: { format: 'media' },
 
-        config: {
-          safetySetting: 'block_few',
-          aspectRatio: '16:9',
-          personGeneration: 'allow_all',
-          outputOptions: {
-            mimeType: 'image/jpeg',
-            compressionQuality: 40,
+      const parts: any[] = [];
+
+      if (prevImgUrl) {
+        parts.push({
+          file_data: {
+            mime_type: "image/jpeg",
+            file_uri: prevImgUrl,
           },
+        });
+        parts.push({
+          text: `
+            This image continues the story from the previously generated image.
+            However, you must create a new complete scene (do not include the previous scene).
+            - Ensure the same characters and objects appear consistently (facial features, clothing, colors, accessories).
+            - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.
+            ${imagePrompt}
+          `,
+        });
+      } else {
+        parts.push({ text: imagePrompt });
+      }
+
+      const body = {
+        contents: {
+          role: "USER",
+          parts,
+        },
+        generation_config: {
+          response_modalities: ["TEXT", "IMAGE"],
+
+          ...(seed ? { seed } : {}),
+        },
+        safetySettings: {
+          method: "PROBABILITY",
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+      };
+
+      // 👇 call API with OAuth token
+      const response = await axios.post(API_ENDPOINT, body, {
+        headers: {
+          Authorization: `Bearer ${environment.GCLOUD_AUTH_TOKEN}`, // make sure you export this
+          "Content-Type": "application/json",
         },
       });
+      
+      const res = response.data?.candidates?.[0]?.content.parts
+      // 👇 extract image URL
+      const imagePart =
+  response.data?.candidates?.[0]?.content?.parts?.find(
+    (p: any) => p?.inlineData?.data
+  )?.inlineData?.data || "";
 
-      const imagePart = response.message?.content[0]?.media?.url;
+// const imagePart = res.find((val:any)=>val?.inlineData?.data)
+
+console.log(( imagePart.slice(0,10)))
       return {
-        imageUri: imagePart || '',
+        imageUri: imagePart
       };
     } catch (e) {
-      console.log(e);
+      console.error(e);
       throw new Error(
-        e instanceof Error ? e.message : 'Error while generating image for you'
+        e instanceof Error ? e.message : "Error while generating image"
       );
     }
   }

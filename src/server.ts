@@ -126,7 +126,7 @@ app.post(
     try {
       const { imageUri } = await imageGenerationFlow({
         imagePrompt,
-        seed,
+        
       });
       if (!imageUri) {
         return sendError(res, 'IMAGE_URI_MISSING');

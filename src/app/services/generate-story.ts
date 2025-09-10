@@ -132,7 +132,7 @@ export class GenerateStory {
             return from(uploadString(imageRef, base64Image, 'data_url')).pipe(
               switchMap(() => from(getDownloadURL(imageRef))),
               map((downloadUrl) => {
-                prevImgBaseUrl = downloadUrl;
+                prevImgBaseUrl = base64Image;
                 return {
                   content: partObj.content,
                   imageUri: downloadUrl,
