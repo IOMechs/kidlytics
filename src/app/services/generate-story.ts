@@ -42,18 +42,17 @@ export class GenerateStory {
     );
   }
 
-  generateImage(
-    {
-      imagePrompt,
-      prevImgUrl,
-    }: { imagePrompt: string; prevImgUrl: string | null },
-    seed?: number
-  ): Observable<string> {
+  generateImage({
+    imagePrompt,
+    prevImgUrl,
+  }: {
+    imagePrompt: string;
+    prevImgUrl: string | null;
+  }): Observable<string> {
     return this.http
       .post<{ imageUri: string }>(this.url + '/api/imageGen', {
         imagePrompt,
         prevImgUrl,
-        seed,
       })
       .pipe(
         map((res) => {
@@ -70,19 +69,10 @@ export class GenerateStory {
   getStoryAndImage(
     userContext: Record<string, string>
   ): Observable<StoryGenerationStatus> {
-    let storyName = `Untitled Story`;
-    let userPrompt: Record<string, string> = {};
-    let ageGroup = '5+';
-    let prevImgBaseUrl = '';
-    let prevImgPrompt = '';
-    let language = '';
-    let seed = Math.floor(Math.random() * 10);
-
     const cleanValue = (str: string | undefined): string | undefined => {
       if (!str) {
         return undefined;
       }
-      // This regex removes most emojis and symbols, then trims whitespace.
       return str
         .replace(
           /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
@@ -93,63 +83,36 @@ export class GenerateStory {
 
     return this.getStoryFromGemini(userContext).pipe(
       switchMap((story) => {
-        storyName = story.name;
-        userPrompt = userContext;
-        ageGroup = story.ageGroup;
-        language = story.language;
-        return from(
-          story.storyParts.map((part, index) => ({ ...part, index }))
-        );
-      }),
-      concatMap((partObj) => {
-        let imagePromptWithContext = `Current Scene Prompt: ${partObj.imagePrompt}
+        // The story from Gemini now includes base64 image data in imageUrl
+        // We need to upload these to Firebase storage and get the download URLs
+        const uploadTasks = story.storyParts.map((part, index) => {
+          const imagePath = `stories/${Date.now()}-part-${index}.png`;
+          const imageRef = ref(storage, imagePath);
+          return from(uploadString(imageRef, part.imageUrl, 'data_url')).pipe(
+            switchMap(() => from(getDownloadURL(imageRef))),
+            map((downloadUrl) => ({
+              content: part.content,
+              imageUri: downloadUrl, // Firebase URL
+            }))
+          );
+        });
 
-        Instructions for this new image to be generated:
-          - Style: Keep the illustration cartoonish and animated.
-          - If you get another image in the context, use it as a reference for the style, facial features, etc.
-          - Do not include any text or labels in the image.
-          - If there's a previous image, ensure the characters and objects are consistent with the previous images in terms of design, colors, and overall look.
-          - If there is a previous image, do not include it in the new image, but ensure the new image continues the story from the previous one.
-          - If there is no previous image, create a new scene that fits the story context.
-          - Ensure the image is suitable for children aged ${ageGroup} and does not contain any inappropriate content.
-          - The image should be colorful, engaging, and visually appealing to children.
-          - The image should be suitable for a story about ${storyName}.
-          - MOST IMPORTANT INSTRUCTION : Deeply analyze the reference image provided to you, make sure each character in the new image looks exactly the same as it does in previous image if it is there, because both are the scenes of the same story .
-          - The given image was generated against this prompt : ${prevImgPrompt}
-`;
-        return this.generateImage(
-          {
-            imagePrompt: imagePromptWithContext,
-            prevImgUrl: prevImgBaseUrl,
-          },
-          seed
-        ).pipe(
-          switchMap((base64Image) => {
-            prevImgPrompt = partObj.imagePrompt;
-            // Upload image to Firebase Storage
-            const imagePath = `stories/${Date.now()}-part-${partObj.index}.png`;
-            const imageRef = ref(storage, imagePath);
-            return from(uploadString(imageRef, base64Image, 'data_url')).pipe(
-              switchMap(() => from(getDownloadURL(imageRef))),
-              map((downloadUrl) => {
-                prevImgBaseUrl = downloadUrl;
-                return {
-                  content: partObj.content,
-                  imageUri: downloadUrl,
-                };
-              })
-            );
-          })
+        return from(uploadTasks).pipe(
+          concatMap((task) => task),
+          toArray(),
+          map((storyPartsWithImages) => ({
+            ...story,
+            storyParts: storyPartsWithImages,
+          }))
         );
       }),
-      toArray(),
-      concatMap((storyPartsWithImages: StoryPartWithImg[]) => {
+      concatMap((storyWithFirebaseImages) => {
         const storyDoc = {
-          name: storyName,
-          storyParts: storyPartsWithImages,
+          name: storyWithFirebaseImages.name,
+          storyParts: storyWithFirebaseImages.storyParts,
           createdAt: new Date(),
-          userPrompt,
-          ageGroup,
+          userPrompt: userContext,
+          ageGroup: storyWithFirebaseImages.ageGroup,
           language:
             userContext[
               'Which language would you like the story to be in'
@@ -163,22 +126,14 @@ export class GenerateStory {
           mood: cleanValue(userContext['What mood should the story have?']),
         };
 
-        try {
-          return from(addDoc(collection(db, 'stories'), storyDoc)).pipe(
-            map((docRef) => ({
-              status: 'Success' as const,
-              message:
-                'Your story has been generated. Click the link below and enjoy reading...',
-              url: `${environment.FRONTEND_BASE_URL}/viewStory?id=${docRef.id}`,
-            }))
-          );
-        } catch (e) {
-          return of({
-            status: 'Error' as const,
-            message: 'Failed to save story. Please try again later.',
-            url: '',
-          });
-        }
+        return from(addDoc(collection(db, 'stories'), storyDoc)).pipe(
+          map((docRef) => ({
+            status: 'Success' as const,
+            message:
+              'Your story has been generated. Click the link below and enjoy reading...',
+            url: `${environment.FRONTEND_BASE_URL}/viewStory?id=${docRef.id}`,
+          }))
+        );
       })
     );
   }

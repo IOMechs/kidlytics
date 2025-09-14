@@ -2,6 +2,8 @@ import { genkit } from 'genkit';
 import { z } from 'zod';
 import { environment } from '../environments/environment';
 import { vertexAI } from '@genkit-ai/vertexai';
+import { GoogleGenAI } from '@google/genai';
+import axios from 'axios';
 
 const ai = genkit({
   plugins: [
@@ -21,11 +23,7 @@ export const storyGenerationFlow = ai.defineFlow(
       storyParts: z.array(
         z.object({
           content: z.string(),
-          imagePrompt: z
-            .string()
-            .describe(
-              'Simple prompt which can be given to an image generation model to generate a picture suitable for this part of the story'
-            ),
+          imageUrl: z.string(),
         })
       ),
       language: z.string(),
@@ -36,52 +34,64 @@ export const storyGenerationFlow = ai.defineFlow(
     try {
       const { output } = await ai.generate({
         model: vertexAI.model('gemini-2.0-flash'),
-        prompt: `You are a helpful AI designed to generate short, creative, and age-appropriate stories for young children based on answers provided by a user. Your goal is to create fun, imaginative stories that are completely safe, free of inappropriate themes, avoiding controversial and politcal topics and respectful of safety standards.
+        prompt: `You are a helpful AI designed to generate short, creative, and age-appropriate stories for young children. Your goal is to create fun, imaginative stories that are safe and consistent.
 
           ---
 
           ## ✍️ TASK:
 
-          Using the provided input, generate a story that is:
+          Your task is to generate a complete story object based on the user's input. Follow these steps precisely:
 
-          - Broken into 4–5 parts (each as a separate object in an array)
-          - Each part should be:
-            - 3–6 sentences long
-            - Simple enough for children (ages 4–10) to understand
-            - Wholesome, imaginative, and positive
-            - Must be relatable to the person whom the story is for. This info can be found in the provided input
-            - Rich in visuals and emotions to inspire picture generation
-          - For each part, also return a **simple, Imagen-safe image prompt** that represents the scene in a **cartoon/digital art** style
-          - The image prompt of each part should be deterministic such that the imagegen model maintains visual consistency across the images.
-          - In each Image Prompt , make sure visual attributes of each character and object is specified and attributes of one character or object must remain same across all story parts
-          - Even if the story content is in some other content write the image prompt in English only
-          - Also, provide the idead age group for this story e.g. 5+
-          - If the language of the story is specified, make sure the story is in that language strictly
+          **Step 1: Define Characters**
+          First, create a 'characterSheet'. This is a JSON object where keys are character names and values are brief, definitive descriptions. This sheet is the absolute source of truth for character appearance.
+          - Example: { "Aslan": "A 5-year-old human boy with brown hair", "Barnaby": "A small, brown teddy bear with a blue bow tie." }
+
+          **Step 2: Generate Story Parts**
+          Next, generate the story, broken into 4-5 parts. Each part should be 3-6 sentences long and suitable for children (ages 4-10).
+
+          **Step 3: Generate Image Prompts**
+          For each story part, create a simple, Imagen-safe image prompt in a **cartoon/digital art** style.
+
+          ---
+
+          ## 📜 RULES FOR CONSISTENCY:
+
+          1.  **CHARACTER ADHERENCE:** The appearance of characters in each image prompt **MUST** strictly adhere to their description in the 'characterSheet'.
+          2.  **NO TRANSFORMATIONS:** Do **NOT** change a character's species or fundamental attributes (e.g., a human boy must remain a human boy). Do not confuse a character's name with other famous characters. For example, a boy named "Aslan" is a boy, not a lion.
+          3.  **VISUAL DETAILS:** The image prompt must contain all specific visual details. The story text should focus on narrative.
+          4.  **VARY THE PERSPECTIVE:** To make the story visually engaging, each image prompt should describe the scene from a different angle or perspective (e.g., close-up on a character's face, a wide shot of the room, a view from behind the character).
+          5.  **LANGUAGE:** All image prompts must be in English.
+
           ---
 
           ## 🔐 INPUT (provided as JSON):
 
-          The user has provided some story preferences and ideas in the form of a structured object:
+          The user has provided some story preferences and ideas:
 
           ${userContext}
 `,
         output: {
           schema: z.object({
             name: z.string(),
+            characterSheet: z
+              .record(z.string())
+              .describe(
+                'A JSON object defining the main characters and their appearance.'
+              ),
             storyParts: z.array(
               z.object({
                 content: z.string().describe('nth Part of the story'),
                 imagePrompt: z
                   .string()
                   .describe(
-                    'Simple prompt which can be given to an image generation model to generate a picture suitable for this part of the story'
+                    'A simple, consistent prompt for an image generation model.'
                   ),
               })
             ),
             language: z
               .string()
               .describe(
-                "The language of the story. Please include full name of the language e.g. 'English'"
+                "The language of the story. Please include the full name of the language e.g. 'English'"
               ),
             ageGroup: z
               .string()
@@ -92,7 +102,42 @@ export const storyGenerationFlow = ai.defineFlow(
 
       if (!output) throw new Error('Error While Generating Story');
 
-      return output;
+      const storyPartsWithImages: { content: string; imageUrl: string }[] = [];
+      let prevImgUrl = '';
+
+      // Generate the first image
+      const firstPart = output.storyParts[0];
+      if (firstPart) {
+        const { imageUri } = await imagenGenerationFlow({
+          imagePrompt: firstPart.imagePrompt,
+        });
+        prevImgUrl = imageUri;
+        storyPartsWithImages.push({
+          content: firstPart.content,
+          imageUrl: imageUri,
+        });
+      }
+
+      // Generate subsequent images consistently
+      for (let i = 1; i < output.storyParts.length; i++) {
+        const part = output.storyParts[i];
+        const { imageUri } = await consistentImageGenerationFlow({
+          imagePrompt: part.imagePrompt,
+          prevImgUrl: prevImgUrl,
+        });
+        prevImgUrl = imageUri;
+        storyPartsWithImages.push({
+          content: part.content,
+          imageUrl: imageUri,
+        });
+      }
+
+      return {
+        name: output.name,
+        storyParts: storyPartsWithImages,
+        language: output.language,
+        ageGroup: output.ageGroup,
+      };
     } catch (e) {
       console.log(e);
       throw new Error('Error while generating story');
@@ -184,65 +229,105 @@ Do infer an age group from age (if given in inital prompt) or from other info gi
   }
 );
 
-export const imageGenerationFlow = ai.defineFlow(
+export const imagenGenerationFlow = ai.defineFlow(
   {
-    name: 'imageGenerationFlow',
+    name: 'imagenGenerationFlow',
     inputSchema: z.object({
       imagePrompt: z.string(),
-      prevImgUrl: z.string().optional(),
-      seed: z.number().optional(),
     }),
     outputSchema: z.object({
       imageUri: z.string(),
     }),
   },
-  async ({ imagePrompt, prevImgUrl, seed }) => {
+  async ({ imagePrompt }) => {
     try {
-      if (prevImgUrl) {
-        // Use Gemini 2.5 Flash Image for subsequent images
-        const response = await ai.generate({
-          model: vertexAI.model('gemini-2.5-flash-image-preview'),
-          prompt: [
-            { text: imagePrompt },
-            { media: { url: prevImgUrl, mimeType: 'image/jpeg' } },
-          ],
-          output: { format: 'inline' },
-          config: {
-            safetySetting: 'block_few',
-            personGeneration: 'allow_all',
+      // Use Imagen for the first image
+      const response = await ai.generate({
+        model: vertexAI.model('imagen-3.0-fast-generate-001'),
+        prompt: [{ text: imagePrompt }],
+        output: { format: 'data_url' },
+        config: {
+          personGeneration: 'allow_all',
+          aspectRatio: '16:9',
+          outputOptions: {
+            mimeType: 'image/jpeg',
+            compressionQuality: 40,
           },
-        });
+        },
+      });
 
-        const part = response.candidates[0].content.parts[0];
-        if (part.inlineData) {
-          const { mimeType, data } = part.inlineData;
-          return {
-            imageUri: `data:${mimeType};base64,${data}`,
-          };
+      const imagePart = response.message?.content[0]?.media?.url;
+      return {
+        imageUri: imagePart || '',
+      };
+    } catch (e) {
+      console.log(e);
+      throw new Error(
+        e instanceof Error ? e.message : 'Error while generating image for you'
+      );
+    }
+  }
+);
+
+export const consistentImageGenerationFlow = ai.defineFlow(
+  {
+    name: 'consistentImageGenerationFlow',
+    inputSchema: z.object({
+      imagePrompt: z.string(),
+      prevImgUrl: z.string(),
+    }),
+    outputSchema: z.object({
+      imageUri: z.string(),
+    }),
+  },
+  async ({ imagePrompt, prevImgUrl }) => {
+    try {
+      const genAI = new GoogleGenAI({
+        apiKey: process.env['GEMINI_API_KEY'] || '',
+      });
+
+      // Fetch the previous image and convert it to base64
+      const imageResponse = await axios.get(prevImgUrl, {
+        responseType: 'arraybuffer',
+      });
+      const imageBuffer = Buffer.from(imageResponse.data, 'binary');
+      const imageBase64 = imageBuffer.toString('base64');
+
+      const model = 'gemini-2.5-flash-image-preview';
+
+      const response = await genAI.models.generateContent({
+        model,
+        config: {
+          temperature: 0.7,
+        },
+        contents: [
+          {
+            parts: [
+              { text: imagePrompt },
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: imageBase64,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.text) {
+          console.log(part.text);
+        } else if (part.inlineData) {
+          const imageData = part.inlineData.data;
+          const mimeType = part.inlineData.mimeType;
+          if (imageData) {
+            return { imageUri: `data:${mimeType};base64,${imageData}` };
+          }
         }
-        throw new Error('No image data in response from Gemini.');
-      } else {
-        // Use Imagen for the first image
-        const response = await ai.generate({
-          model: vertexAI.model('imagen-3.0-fast-generate-001'),
-          prompt: [{ text: imagePrompt }],
-          output: { format: 'data_url' },
-          config: {
-            safetySetting: 'block_few',
-            aspectRatio: '16:9',
-            personGeneration: 'allow_all',
-            outputOptions: {
-              mimeType: 'image/jpeg',
-              compressionQuality: 40,
-            },
-          },
-        });
-
-        const imagePart = response.message?.content[0]?.media?.url;
-        return {
-          imageUri: imagePart || '',
-        };
       }
+
+      throw new Error('No image data in response from Gemini.');
     } catch (e) {
       console.log(e);
       throw new Error(
