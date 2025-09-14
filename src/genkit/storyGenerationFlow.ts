@@ -198,42 +198,51 @@ export const imageGenerationFlow = ai.defineFlow(
   },
   async ({ imagePrompt, prevImgUrl, seed }) => {
     try {
-      const response = await ai.generate({
-        model: vertexAI.model('imagen-3.0-fast-generate-001'),
-        prompt: prevImgUrl
-          ? [
-              { text: imagePrompt },
-              {
-                text: `
-                  This image (to be generated) continues the story from the previously generated image see attached media. However, you have to create a new complete scene (do not include the previous scene).
-                  - Ensure the same characters and objects appear with consistent looks across both images (e.g., facial features, clothing, colors, accessories).
-                  - Maintain overall visual consistency with the previous image in terms of character design, objects, and setting.`,
-              },
-              { media: { url: prevImgUrl || '' } },
-            ]
-          : [
-              {
-                text: imagePrompt,
-              },
-            ],
-
-        output: { format: 'media' },
-
-        config: {
-          safetySetting: 'block_few',
-          aspectRatio: '16:9',
-          personGeneration: 'allow_all',
-          outputOptions: {
-            mimeType: 'image/jpeg',
-            compressionQuality: 40,
+      if (prevImgUrl) {
+        // Use Gemini 2.5 Flash Image for subsequent images
+        const response = await ai.generate({
+          model: vertexAI.model('gemini-2.5-flash-image-preview'),
+          prompt: [
+            { text: imagePrompt },
+            { media: { url: prevImgUrl, mimeType: 'image/jpeg' } },
+          ],
+          output: { format: 'inline' },
+          config: {
+            safetySetting: 'block_few',
+            personGeneration: 'allow_all',
           },
-        },
-      });
+        });
 
-      const imagePart = response.message?.content[0]?.media?.url;
-      return {
-        imageUri: imagePart || '',
-      };
+        const part = response.candidates[0].content.parts[0];
+        if (part.inlineData) {
+          const { mimeType, data } = part.inlineData;
+          return {
+            imageUri: `data:${mimeType};base64,${data}`,
+          };
+        }
+        throw new Error('No image data in response from Gemini.');
+      } else {
+        // Use Imagen for the first image
+        const response = await ai.generate({
+          model: vertexAI.model('imagen-3.0-fast-generate-001'),
+          prompt: [{ text: imagePrompt }],
+          output: { format: 'data_url' },
+          config: {
+            safetySetting: 'block_few',
+            aspectRatio: '16:9',
+            personGeneration: 'allow_all',
+            outputOptions: {
+              mimeType: 'image/jpeg',
+              compressionQuality: 40,
+            },
+          },
+        });
+
+        const imagePart = response.message?.content[0]?.media?.url;
+        return {
+          imageUri: imagePart || '',
+        };
+      }
     } catch (e) {
       console.log(e);
       throw new Error(
