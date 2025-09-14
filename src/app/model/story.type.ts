@@ -1,6 +1,6 @@
 export type StoryPart = {
   content: string;
-  imagePrompt: string;
+  imageUrl: string;
 };
 
 export type StoryPartWithImg = {

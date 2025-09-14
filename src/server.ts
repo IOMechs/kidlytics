@@ -12,7 +12,8 @@ const __filename = fileURLToPath(import.meta.url);
 import express, { Request, Response, NextFunction } from 'express';
 import { join } from 'node:path';
 import {
-  imageGenerationFlow,
+  imagenGenerationFlow,
+  consistentImageGenerationFlow,
   storyGenerationFlow,
   blueprintGenerationFlow,
 } from './genkit/storyGenerationFlow';
@@ -121,13 +122,25 @@ app.post(
   '/api/imageGen',
   express.json(),
   async (req: Request, res: Response) => {
-    const { imagePrompt, seed } = req.body;
+    const { imagePrompt, prevImgUrl } = req.body;
 
     try {
-      const { imageUri } = await imageGenerationFlow({
-        imagePrompt,
-        seed,
-      });
+      let imageUri;
+      if (prevImgUrl) {
+        // We have a previous image, so we need to maintain consistency.
+        const result = await consistentImageGenerationFlow({
+          imagePrompt,
+          prevImgUrl,
+        });
+        imageUri = result.imageUri;
+      } else {
+        // This is the first image, so we use the standard image generation.
+        const result = await imagenGenerationFlow({
+          imagePrompt,
+        });
+        imageUri = result.imageUri;
+      }
+
       if (!imageUri) {
         return sendError(res, 'IMAGE_URI_MISSING');
       }
