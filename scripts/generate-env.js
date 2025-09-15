@@ -37,6 +37,7 @@ const environmentFileContent = `export const environment = {
     "http://localhost:4200"
   )}',
   apiKey: '${getEnvVar("apiKey")}',
+  GEMINI_API_KEY: '${getEnvVar("GEMINI_API_KEY")}',
   authDomain: '${getEnvVar("authDomain")}',
   projectId: '${getEnvVar("projectId")}',
   storageBucket: '${getEnvVar("storageBucket")}',
@@ -76,6 +77,7 @@ console.log({
   apiUrl: getEnvVar("apiUrl", "https://api.example.com"),
   FRONTEND_BASE_URL: getEnvVar("FRONTEND_BASE_URL", "http://localhost:4200"),
   apiKey: getEnvVar("apiKey") ? "****" : "not set",
+  GEMINI_API_KEY: getEnvVar("GEMINI_API_KEY") ? "****" : "not set",
   authDomain: getEnvVar("authDomain"),
   projectId: getEnvVar("projectId"),
   storageBucket: getEnvVar("storageBucket"),

@@ -67,6 +67,9 @@ env:
   - variable: apiKey
     secret: projects/95440248217/secrets/apiKey/versions/3
 
+  - variable: GEMINI_API_KEY
+    secret: projects/95440248217/secrets/GEMINI_API_KEY/versions/1
+
   - variable: ADMIN_PASSWORD
     secret: projects/95440248217/secrets/ADMIN_PASSWORD/versions/1
 

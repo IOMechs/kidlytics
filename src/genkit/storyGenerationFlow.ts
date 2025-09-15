@@ -283,7 +283,7 @@ export const consistentImageGenerationFlow = ai.defineFlow(
   async ({ imagePrompt, prevImgUrl }) => {
     try {
       const genAI = new GoogleGenAI({
-        apiKey: process.env['GEMINI_API_KEY'] || '',
+        apiKey: environment.GEMINI_API_KEY || '',
       });
 
       // Fetch the previous image and convert it to base64
