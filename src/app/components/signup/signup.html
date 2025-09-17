@@ -1,0 +1,54 @@
+<div
+  class="min-h-screen flex items-center justify-center bg-dracula text-dracula-foreground"
+>
+  <div class="w-full max-w-md p-8 rounded-2xl shadow-lg bg-dracula-selection">
+    <!-- Branding -->
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-primary">Kidlytics</h1>
+      <p class="text-sm text-dracula-comment mt-1">
+        AI Powered Story Teller for Kids
+      </p>
+    </div>
+
+    <!-- Signup Form -->
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSignup()"
+      class="flex flex-col gap-4"
+    >
+      <input
+        class="p-3 rounded-lg border border-dracula-purple bg-dracula text-dracula-foreground focus:ring-2 focus:ring-primary transition"
+        type="email"
+        formControlName="email"
+        placeholder="Email"
+      />
+
+      <input
+        class="p-3 rounded-lg border border-dracula-purple bg-dracula text-dracula-foreground focus:ring-2 focus:ring-primary transition"
+        type="password"
+        formControlName="password"
+        placeholder="Password"
+      />
+
+      <button
+        type="submit"
+        class="btn-primary p-3 border b-2 rounded-lg text-white font-semibold transition hover:scale-105 disabled:opacity-50"
+        [disabled]="form.invalid || loading()"
+      >
+        {{ loading() ? 'Creating account...' : 'Sign Up' }}
+      </button>
+      <button
+        class="btn btn-sm btn-primary w-full hover:btn-ghost cursor-pointer"
+        (click)="onGoogleLogin()"
+        [disabled]="loading()"
+      >
+        Continue with Google
+      </button>
+    </form>
+
+    <!-- Error -->
+    @if(error()) {
+    <p class="text-sm text-red-400 mt-3 text-center">Error while Sign up</p>
+    }
+  </div>
+</div>

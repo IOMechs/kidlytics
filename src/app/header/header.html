@@ -37,4 +37,19 @@
       </div>
     </div>
   </div>
+
+  @if(authStore.isLoggedIn()){
+
+  <button class="btn-primary btn mx-3" (click)="onLogout()">Logout</button>
+  }@else{
+
+  <div class="flex gap-1 mx-3">
+    <a routerLink="/signin" class="btn btn-ghost px-2 cursor-pointer">
+      Sign In
+    </a>
+    <a routerLink="/signup" class="btn btn-ghost px-2 cursor-pointer">
+      Sign Up
+    </a>
+  </div>
+  }
 </div>
