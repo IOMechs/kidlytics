@@ -1,0 +1,1 @@
+const NO_OF_SAVED_STORIES_ALLOWED = 5;
