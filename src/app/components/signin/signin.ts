@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-signin',
   imports: [ReactiveFormsModule],
@@ -16,6 +17,8 @@ import { AuthService } from '../../services/auth.service';
 export class Signin {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+
+  private readonly router = inject(Router);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -50,6 +53,7 @@ export class Signin {
     try {
       const user = await this.auth.googleSignIn();
       console.log(user);
+      this.router.navigate(['/story']);
       // show toast, save user object in local storage and navigate to create page
     } catch (err: unknown) {
       this.error.set((err as Error).message);
