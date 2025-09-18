@@ -32,6 +32,8 @@ import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 import { generateStoryPdf } from '../../utils/pdfGenertor';
 import { StoryService } from '../../services/story.service';
+import { AuthStore } from '../../services/auth.store';
+import { StorySaveService } from '../../services/save.story.service';
 
 @Component({
   selector: 'app-display-story',
@@ -64,8 +66,14 @@ export class DisplayStory implements OnInit, OnDestroy {
   speakingSignal = signal(false);
   storyAudio = signal<string[]>([]);
   storyLanguage = signal<string>('');
+  storyId = signal<string>('');
 
   testimonialDialog = inject(MatDialog);
+  readonly authStore = inject(AuthStore);
+
+  private readonly saveStoryService = inject(StorySaveService);
+
+  readonly isLoggedIn = this.authStore.isLoggedIn;
 
   // For modal content
   modalContent = signal<{
@@ -97,6 +105,7 @@ export class DisplayStory implements OnInit, OnDestroy {
         return;
       }
     });
+    this.storyId.set(id);
     if (isPlatformServer(this.platformId)) {
       this.storyService.getStory(id).subscribe((storyData) => {
         this.isLoading.set(false);
@@ -340,6 +349,13 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   handleSpeech(shouldSpeak: boolean) {
     this.speakingSignal.set(shouldSpeak);
+  }
+  onSaveStory() {
+    console.log('Saving Story...');
+    const uid = this.authStore.currentUser?.uid;
+    if (uid && this.storyId()) {
+      this.saveStoryService.saveStory(this.storyId(), uid);
+    }
   }
 }
 
