@@ -13,6 +13,8 @@ import { RouterLink } from '@angular/router';
 export class UserStoriesComponent {
   userStories = signal<any[]>([]);
   loading = signal(true);
+  isModalOpen = signal(false);
+  selectedStoryId = signal<string | null>(null);
 
   private readonly storyService = inject(StorySaveService);
   private readonly authService = inject(AuthStore);
@@ -37,5 +39,36 @@ export class UserStoriesComponent {
         }
       }
     });
+  }
+
+  openConfirmationModal(storyId: string): void {
+    this.selectedStoryId.set(storyId);
+    this.isModalOpen.set(true);
+  }
+
+  closeConfirmationModal(): void {
+    this.isModalOpen.set(false);
+    this.selectedStoryId.set(null);
+  }
+
+  async confirmUnsave(): Promise<void> {
+    const storyId = this.selectedStoryId();
+    const user = this.authService.user();
+
+    if (storyId && user?.uid) {
+      const result = await this.storyService.removeSavedStory(
+        storyId,
+        user.uid
+      );
+      if (result.success) {
+        this.userStories.update((stories) =>
+          stories.filter((story) => story.id !== storyId)
+        );
+      } else {
+        // Optional: handle error with a user-facing message
+        console.error('Failed to unsave story:', result.message);
+      }
+      this.closeConfirmationModal();
+    }
   }
 }

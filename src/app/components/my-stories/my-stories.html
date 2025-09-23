@@ -14,13 +14,21 @@
       </figure>
       <div class="card-body text-center items-center">
         <h3 class="card-title text-lg h-16 text-white">{{ story.name }}</h3>
-        <a
-          class="btn btn-primary mt-4"
-          [routerLink]="'/viewStory'"
-          [queryParams]="{ id: story.id }"
-        >
-          Read Story
-        </a>
+        <div class="card-actions justify-center gap-2">
+          <a
+            class="btn btn-primary"
+            [routerLink]="'/viewStory'"
+            [queryParams]="{ id: story.id }"
+          >
+            Read Story
+          </a>
+          <button
+            class="btn btn-secondary"
+            (click)="openConfirmationModal(story.id)"
+          >
+            Unsave
+          </button>
+        </div>
       </div>
     </div>
     } } @else if (!loading()) {
@@ -40,3 +48,21 @@
     } }
   </div>
 </section>
+
+<!-- Confirmation Modal -->
+@if (isModalOpen()) {
+<dialog class="modal modal-open modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">Confirm Unsave</h3>
+    <p class="py-4">
+      Are you sure you want to unsave this story? This action cannot be undone.
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost" (click)="closeConfirmationModal()">
+        Cancel
+      </button>
+      <button class="btn btn-error" (click)="confirmUnsave()">Unsave</button>
+    </div>
+  </div>
+</dialog>
+}
