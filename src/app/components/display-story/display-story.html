@@ -68,13 +68,22 @@
 
     <!-- Only display button if feedback is not submitted -->
     @if(!checkFeedbackSubmitted()){
-
-    <button
-      class="btn btn-primary block my-4 m-auto"
-      (click)="openTestimonialDialog()"
-    >
-      Give Your Feedback
-    </button>
+    <div class="flex justify-center gap-4">
+      <button
+        class="btn btn-primary my-4"
+        [disabled]="!isLoggedIn()"
+        (click)="onSaveStory()"
+        [matTooltipDisabled]="isLoggedIn()"
+        matTooltip="Please Log In to save the story"
+        matTooltipPosition="above"
+      >
+        <mat-icon class="mx-auto block"> save</mat-icon>
+        Save Story
+      </button>
+      <button class="btn btn-primary my-4" (click)="openTestimonialDialog()">
+        Give Your Feedback
+      </button>
+    </div>
     } }
   </div>
 

@@ -2,6 +2,16 @@
   <div class="flex-1">
     <a routerLink="/" class="btn btn-ghost text-xl">Kidlytics</a>
   </div>
+
+  @if(authStore.isLoggedIn()){
+  <a
+    routerLink="/my-stories"
+    class="px-2 cursor-pointer sm:mx-8 mx-4 sm:text-md text-sm font-underline"
+  >
+    Saved Stories
+  </a>
+
+  }
   <div class="flex-none">
     <div class="dropdown dropdown-end gap-4 flex">
       <div role="button" class="btn btn-secondary btn-circle">
@@ -37,4 +47,19 @@
       </div>
     </div>
   </div>
+
+  @if(authStore.isLoggedIn()){
+
+  <button class="btn-primary btn mx-3" (click)="onLogout()">Logout</button>
+  }@else{
+
+  <div class="flex gap-1 mx-3">
+    <a routerLink="/signin" class="btn btn-ghost px-2 cursor-pointer">
+      Sign In
+    </a>
+    <a routerLink="/signup" class="btn btn-ghost px-2 cursor-pointer">
+      Sign Up
+    </a>
+  </div>
+  }
 </div>

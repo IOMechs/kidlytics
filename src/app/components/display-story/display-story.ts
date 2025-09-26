@@ -1,5 +1,5 @@
 import { SocialShare } from '../social-share/social-share';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StoryPartWithImg } from '../../model/story.type';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase';
@@ -32,6 +32,9 @@ import { of } from 'rxjs';
 import { TestimonialDialog } from '../ui/dialog-box/testimonial-dialog';
 import { generateStoryPdf } from '../../utils/pdfGenertor';
 import { StoryService } from '../../services/story.service';
+import { AuthStore } from '../../services/auth.store';
+import { StorySaveService } from '../../services/save.story.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-display-story',
@@ -47,6 +50,7 @@ import { StoryService } from '../../services/story.service';
     MatBadgeModule,
     CommonModule,
     SocialShare,
+    MatSnackBarModule,
   ],
 })
 export class DisplayStory implements OnInit, OnDestroy {
@@ -64,8 +68,16 @@ export class DisplayStory implements OnInit, OnDestroy {
   speakingSignal = signal(false);
   storyAudio = signal<string[]>([]);
   storyLanguage = signal<string>('');
+  storyId = signal<string>('');
 
   testimonialDialog = inject(MatDialog);
+  readonly authStore = inject(AuthStore);
+
+  private readonly saveStoryService = inject(StorySaveService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
+
+  readonly isLoggedIn = this.authStore.isLoggedIn;
 
   // For modal content
   modalContent = signal<{
@@ -97,6 +109,7 @@ export class DisplayStory implements OnInit, OnDestroy {
         return;
       }
     });
+    this.storyId.set(id);
     if (isPlatformServer(this.platformId)) {
       this.storyService.getStory(id).subscribe((storyData) => {
         this.isLoading.set(false);
@@ -340,6 +353,30 @@ export class DisplayStory implements OnInit, OnDestroy {
 
   handleSpeech(shouldSpeak: boolean) {
     this.speakingSignal.set(shouldSpeak);
+  }
+  async onSaveStory() {
+    const uid = this.authStore.currentUser?.uid;
+    if (uid && this.storyId()) {
+      const result = await this.saveStoryService.saveStory(this.storyId(), uid);
+
+      if (result.success) {
+        const snackBarRef = this.snackBar.open(result.message, 'View Stories', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+
+        snackBarRef.onAction().subscribe(() => {
+          this.router.navigate(['/my-stories']);
+        });
+      } else {
+        this.snackBar.open(result.message, 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+      }
+    }
   }
 }
 
