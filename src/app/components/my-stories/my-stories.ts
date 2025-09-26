@@ -31,7 +31,6 @@ export class UserStoriesComponent {
           const storiesArray = stories.map((v) => ({ ...v.data(), id: v.id }));
           this.userStories.set(storiesArray);
           console.log(this.userStories());
-          this.loading.set(false);
         } catch (err) {
           console.error('Error loading stories:', err);
         } finally {

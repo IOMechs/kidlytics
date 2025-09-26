@@ -13,7 +13,6 @@ export class AuthStore {
     // Subscribe to Firebase auth changes
     onAuthStateChanged(auth, (firebaseUser) => {
       this._user.set(firebaseUser);
-      console.log('STate changed', this.isLoggedIn());
     });
   }
 

@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '../../../firebase';
+import { NO_OF_SAVED_STORIES_ALLOWED } from '../../constants/limits.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +30,7 @@ export class StorySaveService {
       const snapshot = await getDocs(q);
       const savedCount = snapshot.size;
 
-      if (savedCount >= 5) {
+      if (savedCount >= NO_OF_SAVED_STORIES_ALLOWED) {
         return {
           success: false,
           message: 'You can only save up to 5 stories.',
@@ -72,7 +73,6 @@ export class StorySaveService {
     const storiesRef = collection(db, 'stories');
     const q = query(storiesRef, where('savedBy', 'array-contains', uid));
     const snapshot = await getDocs(q);
-    console.log(snapshot.docs);
     return snapshot.docs;
   }
   async removeSavedStory(
