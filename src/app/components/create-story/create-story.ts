@@ -79,6 +79,14 @@ export class CreateStory {
         new FormControl('', Validators.required)
       );
     });
+    this.answerToQuestions.addControl(
+      'Poem Mode',
+      new FormControl(false, { nonNullable: true })
+    );
+    this.answerToQuestions.addControl(
+      'Word Count per Line',
+      new FormControl(10, { nonNullable: true })
+    );
   }
 
   get selectedAnswer(): string {

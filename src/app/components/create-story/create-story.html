@@ -42,6 +42,38 @@
         </li>
         }
       </ul>
+      <form [formGroup]="answerToQuestions">
+        <div
+          class="mt-4 space-y-2 bg-base-100 rounded-box shadow-md w-full p-4"
+        >
+          <div class="flex">
+            <div class="form-control flex items-center gap-2 flex-1">
+              <label class="label cursor-pointer">
+                <span class="label-text text-base font-semibold"
+                  >Poem Mode</span
+                >
+              </label>
+              <input
+                type="checkbox"
+                class="toggle toggle-primary"
+                formControlName="Poem Mode"
+              />
+            </div>
+            <div class="form-control flex items-center gap-2">
+              <label class="label">
+                <span class="label-text text-base font-semibold"
+                  >Word Count per Line</span
+                >
+              </label>
+              <input
+                type="number"
+                class="input input-bordered w-full max-w-xs"
+                formControlName="Word Count per Line"
+              />
+            </div>
+          </div>
+        </div>
+      </form>
       <div class="card-actions justify-between items-center mt-6">
         <button class="btn btn-ghost" (click)="startOver()">Start Over</button>
         <div>

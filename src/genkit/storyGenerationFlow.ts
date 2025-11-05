@@ -180,6 +180,14 @@ const blueprintOutputSchema = z.object({
     '😴 Calm',
     '🧗 Adventurous',
   ]),
+  'Poem Mode': z
+    .boolean()
+    .default(false)
+    .describe('Whether the story should be a poem.'),
+  'Word Count per Line': z
+    .number()
+    .default(10)
+    .describe('If poem mode is on, the number of words per line.'),
 });
 
 export const blueprintGenerationFlow = ai.defineFlow(
@@ -206,6 +214,10 @@ Questions:
    (Choose one: '🧡 Kindness', '💪 Courage', '🧠 Curiosity', '👫 Friendship', '✨ Just for fun')
 7. "What mood should the story have?"
    (Choose one: '😂 Funny', '🧙 Magical', '😴 Calm', '🧗 Adventurous')
+8. "Poem Mode"
+   (default to false)
+9. "Word Count per Line"
+   (default to 10)
 
 Here is the user's story idea:
 ---
